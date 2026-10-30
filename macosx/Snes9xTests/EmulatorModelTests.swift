@@ -265,6 +265,22 @@ final class EmulatorModelTests: XCTestCase {
         XCTAssertEqual(assignments.keysByPlayer[1], pro2.key)
     }
 
+    func testAtLaunchChoosingTheKeyboardForPlayer1Holds() {
+        let assignments = FakeGamepadAssignments()
+        assignments.connected = [pro2]
+        let chosenIn = EmulatorModel(engine: FakeEngine())
+        chosenIn.gamepadAssignments = assignments
+        chosenIn.choosePlayer1Gamepad(nil)
+
+        let relaunched = EmulatorModel(engine: FakeEngine())
+        relaunched.gamepadAssignments = assignments
+        relaunched.assignPlayer1GamepadIfNeeded()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+        XCTAssertNil(relaunched.player1Gamepad)
+        XCTAssertEqual(relaunched.gamepads.map(\.key), [pro2.key], "the menu still offers the pad")
+    }
+
     // MARK: Gamepads that connect and disconnect after launch
 
     func testAGamepadConnectedAfterLaunchBecomesAnUnassignedPlayer1() {
@@ -308,6 +324,20 @@ final class EmulatorModelTests: XCTestCase {
         XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
         XCTAssertEqual(model.player1Gamepad?.key, pro2.key)
         XCTAssertEqual(model.gamepads.count, 2)
+    }
+
+    func testAGamepadConnectedAfterLaunchLeavesAPlayer1OnTheKeyboardAlone() {
+        let model = EmulatorModel(engine: FakeEngine())
+        let assignments = FakeGamepadAssignments()
+        model.gamepadAssignments = assignments
+        model.choosePlayer1Gamepad(nil)
+
+        assignments.connected = [pro2]
+        model.gamepadsDidChange()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+        XCTAssertNil(model.player1Gamepad)
+        XCTAssertEqual(model.gamepads.map(\.key), [pro2.key], "the menu still offers the pad")
     }
 
     func testPlayer1sGamepadDisconnectingThenReturningKeepsPlayer1() {

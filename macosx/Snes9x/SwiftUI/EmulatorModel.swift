@@ -91,6 +91,9 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// Asks the user for a ROM file; returns nil when they cancel.
     var chooseROM: () -> URL? = EmulatorModel.runOpenPanel
 
+    /// What Preferences → Controls saves for a player on the keyboard.
+    private static let keyboardKey = "0:0:0"
+
     private let engine: GameEngine
     private var defaultsObserver: AnyCancellable?
 
@@ -227,6 +230,7 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
     /// A gamepad no player uses does nothing, so when Player 1 has no
     /// connected gamepad it gets the first connected one no other player uses.
+    /// Keyboard is a choice, not a missing gamepad, so it stays.
     @objc public func assignPlayer1GamepadIfNeeded() {
         guard let assignments = gamepadAssignments else {
             return
@@ -235,7 +239,8 @@ public final class EmulatorModel: NSObject, ObservableObject {
         let connected = assignments.connectedGamepads()
         let player1Key = assignments.gamepadKey(forPlayer: 0)
 
-        guard !connected.contains(where: { $0.key == player1Key }),
+        guard player1Key != EmulatorModel.keyboardKey,
+              !connected.contains(where: { $0.key == player1Key }),
               let free = connected.first(where: { assignments.player(forGamepadKey: $0.key) < 0 }) else {
             refreshGamepads()
             return

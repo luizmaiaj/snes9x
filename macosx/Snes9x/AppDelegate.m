@@ -23,12 +23,14 @@
 #import "S9xPreferencesConstants.h"
 #import "S9xCheatFinderViewController.h"
 #import "S9xOpenMultipleViewController.h"
+#import "Snes9x-Swift.h"
 
 NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 NSWindowFrameAutosaveName const kCheatsWindowIdentifier = @"s9xCheatsWindow";
 NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderWindow";
 
 @interface AppDelegate () <S9xCheatFinderDelegate>
+@property (nonatomic, strong) S9xEmulatorModel *emulator;
 @end
 
 @implementation AppDelegate
@@ -39,7 +41,16 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     [self setupDefaults];
     [self importRecentItems];
 
+    self.emulator = [[S9xEmulatorModel alloc] initWithEngine:self.s9xEngine];
+    __weak AppDelegate *weakSelf = self;
+    self.emulator.openHandler = ^BOOL(NSURL *url)
+    {
+        return [weakSelf openURL:url];
+    };
+
     NSWindow *gameWindow = [[NSWindow alloc] initWithContentRect:s9xView.frame styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:NO];
+
+    [S9xGameWindowHosting installIn:gameWindow model:self.emulator];
 
     gameWindow.contentView.wantsLayer = YES;
     gameWindow.contentView.layer.backgroundColor = NSColor.blackColor.CGColor;
@@ -47,7 +58,6 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     gameWindow.title = @"Snes9x";
     gameWindow.frameAutosaveName = kMainWindowIdentifier;
     gameWindow.releasedWhenClosed = NO;
-    gameWindow.backgroundColor = NSColor.clearColor;
 
     if ( ![gameWindow setFrameUsingName:kMainWindowIdentifier] )
     {
@@ -451,16 +461,7 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 
 - (IBAction)openDocument:(id)sender
 {
-    NSOpenPanel* panel = [NSOpenPanel new];
-    panel.canChooseDirectories = NO;
-    panel.allowsMultipleSelection = NO;
-
-    NSModalResponse response = [panel runModal];
-
-    if ( response == NSModalResponseOK )
-    {
-        [self openURL:panel.URL];
-    }
+    [self.emulator openROM];
 }
 
 - (BOOL)openURL:(NSURL *)url
@@ -504,15 +505,9 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 
 - (void)resetWindow
 {
-    [self.s9xEngine recreateS9xView];
+    [self.emulator reloadGameView];
 
     NSWindow *gameWindow = self.gameWindow;
-    [gameWindow.contentView addSubview:s9xView];
-    [s9xView.topAnchor constraintEqualToAnchor:gameWindow.contentView.topAnchor].active = YES;
-    [s9xView.bottomAnchor constraintEqualToAnchor:gameWindow.contentView.bottomAnchor].active = YES;
-    [s9xView.centerXAnchor constraintEqualToAnchor:gameWindow.contentView.centerXAnchor].active = YES;
-    [s9xView.leftAnchor constraintGreaterThanOrEqualToAnchor:gameWindow.contentView.leftAnchor].active = YES;
-    [s9xView.rightAnchor constraintLessThanOrEqualToAnchor:gameWindow.contentView.rightAnchor].active = YES;
 
     if (self.cheatsWindowController != nil)
     {

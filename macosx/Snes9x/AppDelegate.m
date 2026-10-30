@@ -31,6 +31,7 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 
 @interface AppDelegate () <S9xCheatFinderDelegate, S9xGamepadAssignments>
 @property (nonatomic, strong) S9xEmulatorModel *emulator;
+@property (nonatomic, strong) NSURL *launchROM;
 @end
 
 @implementation AppDelegate
@@ -75,6 +76,12 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     }];
 
     [self resetWindow];
+
+    if (self.launchROM != nil)
+    {
+        [self openURL:self.launchROM];
+        self.launchROM = nil;
+    }
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
@@ -124,14 +131,13 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
             @(kKeyOffScreen).stringValue : @(kVK_Tab),
             @(kKeyFunction).stringValue : @(kVK_ANSI_Slash),
             @(kKeyAlt).stringValue : @(kVK_ANSI_Period),
-            @(kKeyFFDown).stringValue : @(kVK_ANSI_Q),
-            @(kKeyFFUp).stringValue : @(kVK_ANSI_W),
             @(kKeyEsc).stringValue : @(kVK_Escape),
             @(kKeyTC).stringValue : @(kVK_ANSI_Comma)
         },
         kShowFPSPref : @(NO),
         kVideoModePref : @(VIDEOMODE_BLOCKY),
         kMacFrameSkipPref : @(macFrameSkip),
+        kTurboRatePref : @(macFastForwardRate),
 
         kSuperFXClockSpeedPercentPref : @(100),
         kSoundInterpolationTypePref: @(2),
@@ -146,6 +152,8 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     [defaults registerDefaults:defaultSettings];
 	[defaults setBool:NO forKey:@"NSWindowAssertWhenDisplayCycleLimitReached"];
 	[defaults synchronize];
+
+    [self.s9xEngine setMacFastForwardRate:(int)[defaults integerForKey:kTurboRatePref]];
 
     self.keys = [[defaults objectForKey:kKeyboardPrefs] mutableCopy];
 
@@ -515,7 +523,16 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename
 {
-    return [self openURL:[NSURL fileURLWithPath:filename]];
+    NSURL *url = [NSURL fileURLWithPath:filename];
+
+    // A ROM that launches the app arrives before applicationDidFinishLaunching:.
+    if (self.emulator == nil)
+    {
+        self.launchROM = url;
+        return YES;
+    }
+
+    return [self openURL:url];
 }
 
 - (IBAction)openDocument:(id)sender
@@ -582,6 +599,13 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 	SEL action = menuItem.action;
 	if (action == @selector(resume:) || action == @selector(softwareReset:) || action == @selector(hardwareReset:)) {
 		return [self.s9xEngine isRunning] && [self.s9xEngine isPaused];
+	}
+	else if (action == @selector(terminate:)) {
+		return YES;
+	}
+	else if (action == @selector(updateTurboRate:)) {
+		menuItem.state = ([NSUserDefaults.standardUserDefaults integerForKey:kTurboRatePref] == menuItem.tag) ? NSOnState : NSOffState;
+		return YES;
 	}
 	else if (action == @selector(updateDeviceSetting:)) {
 		menuItem.state = (self.deviceSetting == (S9xDeviceSetting)menuItem.tag) ? NSOnState : NSOffState;
@@ -674,6 +698,12 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 - (IBAction)hardwareReset:(id)sender
 {
 	[self.s9xEngine hardwareReset];
+}
+
+- (IBAction)updateTurboRate:(NSMenuItem *)sender
+{
+	[self.s9xEngine setMacFastForwardRate:(int)sender.tag];
+	[NSUserDefaults.standardUserDefaults setInteger:sender.tag forKey:kTurboRatePref];
 }
 
 - (IBAction)updateDeviceSetting:(id)sender

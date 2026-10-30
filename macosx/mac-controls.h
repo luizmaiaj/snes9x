@@ -209,8 +209,8 @@ typedef enum
     kKeyOffScreen,
     kKeyFunction,
     kKeyAlt,
-    kKeyFFDown,
-    kKeyFFUp,
+    kKeyFFDown, // unused; the Turbo Rate menu replaced it. Buttons are saved by number.
+    kKeyFFUp, // unused, as above
     kKeyEsc,
     kKeyTC,
     kKeyMouseLeft,
@@ -231,8 +231,6 @@ typedef enum {
     kISpOffScreen,
     kISpFunction,
     kISpAlt,
-    kISpFFDown,
-    kISpFFUp,
     kISpEsc,
     kISpTC,
     kISpMouseLeft,

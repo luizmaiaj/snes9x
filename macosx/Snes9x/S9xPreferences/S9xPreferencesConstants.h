@@ -28,6 +28,7 @@ extern NSString * const kJoypadPlayerPrefs;
 extern NSString * const kShowFPSPref;
 extern NSString * const kVideoModePref;
 extern NSString * const kMacFrameSkipPref;
+extern NSString * const kTurboRatePref;
 
 extern NSString * const kSuperFXClockSpeedPercentPref;
 extern NSString * const kSoundInterpolationTypePref;

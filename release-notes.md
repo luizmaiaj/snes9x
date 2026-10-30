@@ -1,10 +1,12 @@
 ## Unreleased
 
 ### Added
-- macOS: Pause/Resume and Reset buttons in the game window's toolbar. Pause follows Esc and the Emulation menu; Reset restarts a paused game, the same as Emulation → Software Reset (#5, part of #2)
-- macOS: a Player 1 menu in the toolbar shows whether Player 1 uses a gamepad or only the keyboard and lets you pick the gamepad; the choice is saved with Preferences → Controls (#6, part of #2)
-- macOS: at launch, when Player 1 has no connected gamepad, the first connected gamepad no other player uses becomes Player 1, so a new pad works without opening Preferences (#6)
+- macOS: Emulation → Turbo Rate picks the Fast Forward speed, 1× to 15×. It works during play and is remembered after a relaunch
+
+### Changed
+- macOS: the turbo rate no longer has keyboard shortcuts; Q and W, and the Increase and Decrease FF Speed rows in Preferences → Controls, are gone
 
 ### Fixed
-- macOS: choosing a different Player 1 device from the toolbar stops the old gamepad driving Player 1 straight away, instead of only after a relaunch (#6)
-- macOS: Preferences → Controls shows the current device each time it opens, including a change made from the toolbar (#6)
+- macOS: ⌘Q quits while a game is running, instead of lowering the turbo rate
+- macOS: quitting no longer beeps, and it stops the game before saving
+- macOS: opening a ROM from Finder while Snes9x isn't running now starts the game, instead of showing an empty window

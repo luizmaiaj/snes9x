@@ -228,6 +228,9 @@ extern id<S9xInputDelegate> inputDelegate;
 
 - (NSString *)labelForVendorID:(uint32)vendorID productID:(uint32)productID cookie:(uint32)cookie value:(int32)value;
 
+/// Whether a file holds a Super Nintendo ROM, without touching the running game.
++ (BOOL)looksLikeROM:(NSURL *)fileURL;
+
 - (BOOL)loadROM:(NSURL *)fileURL;
 - (BOOL)loadMultiple:(NSArray<NSURL *> *)fileURLs;
 

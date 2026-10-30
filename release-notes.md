@@ -1,4 +1,4 @@
 ## Unreleased
 
 ### Fixed
-- macOS: choosing Keyboard for Player 1 now holds across relaunches and when a gamepad connects, instead of the next free gamepad taking Player 1 (#11)
+- macOS: opening a file that isn't a Super Nintendo ROM now shows an error and leaves the running game alone, instead of replacing it with a black screen (#13)

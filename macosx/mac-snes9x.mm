@@ -26,7 +26,9 @@
 #include "cheats.h"
 #include "movie.h"
 #include "display.h"
+#include "jma/s9x-jma.h"
 
+#include <vector>
 #include <wchar.h>
 
 #include "mac-prefix.h"
@@ -41,11 +43,80 @@
 
 extern wchar_t  macRecordWChar[MOVIE_MAX_METADATA];
 
+bool8 LoadZip (const char *, uint32 *, uint8 *, uint32);
+
 
 void SNES9X_Go (void)
 {
 	if (cartOpen)
 		running = true;
+}
+
+// Whether the 0x40 bytes at offset are a ROM's header: its checksum and complement
+// match or, as homebrew and hacks often leave those wrong, its other fields are sane.
+static bool HasROMHeader (const uint8 *rom, uint32 size, uint32 offset)
+{
+	if (offset + 0x40 > size)
+		return (false);
+
+	const uint8	*header = rom + offset;
+	uint16		complement = header[0x1c] | (header[0x1d] << 8);
+	uint16		checksum   = header[0x1e] | (header[0x1f] << 8);
+	uint16		reset      = header[0x3c] | (header[0x3d] << 8);
+	uint8		mapMode    = header[0x15];
+	uint8		romSize    = header[0x17];
+
+	if (complement + checksum == 0xffff && complement != 0 && checksum != 0)
+		return (true);
+
+	return (reset >= 0x8000 && (mapMode & 0xe0) == 0x20 && romSize >= 5 && romSize <= 13);
+}
+
+// Reads a ROM file the way CMemory::FileLoader does, but into buffer: FileLoader
+// would change the filename the running game saves under.
+static uint32 ReadROMFile (NSURL *fileURL, uint8 *buffer, uint32 size)
+{
+	const char	*filename = fileURL.path.UTF8String;
+	NSString	*extension = fileURL.pathExtension.lowercaseString;
+
+	if ([extension isEqualToString:@"zip"] || [extension isEqualToString:@"msu1"])
+	{
+		uint32	zipSize = 0;
+
+		return (LoadZip(filename, &zipSize, buffer, size) ? zipSize : 0);
+	}
+
+	if ([extension isEqualToString:@"jma"])
+		return ((uint32) load_jma_file(filename, buffer));
+
+	STREAM	fp = OPEN_STREAM(filename, "rb");
+	if (!fp)
+		return (0);
+
+	uint32	fileSize = READ_STREAM(buffer, size, fp);
+	CLOSE_STREAM(fp);
+
+	return (fileSize);
+}
+
+bool8 SNES9X_LooksLikeROM (NSURL *fileURL)
+{
+	// LoROM, HiROM, ExLoROM and ExHiROM.
+	const uint32	headerOffsets[] = { 0x7fc0, 0xffc0, 0x407fc0, 0x40ffc0 };
+	const uint32	copierHeaderSize = 0x200;
+	const uint32	bufferSize = CMemory::MAX_ROM_SIZE + copierHeaderSize;
+
+	std::vector<uint8>	buffer(bufferSize);
+	uint32				size = ReadROMFile(fileURL, buffer.data(), bufferSize);
+
+	for (uint32 offset : headerOffsets)
+	{
+		if (HasROMHeader(buffer.data(), size, offset) ||
+			HasROMHeader(buffer.data(), size, offset + copierHeaderSize))
+			return (TRUE);
+	}
+
+	return (FALSE);
 }
 
 bool8 SNES9X_OpenCart (NSURL *inRef)

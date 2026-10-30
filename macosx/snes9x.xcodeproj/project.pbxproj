@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A13F0C1E5B7D4E2A9C6D1F02 /* ROMFileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13F0C1E5B7D4E2A9C6D1F01 /* ROMFileTests.swift */; };
+		A13F0C1E5B7D4E2A9C6D1F03 /* snes9x_framework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 30D15CEF22CE6B5A005BC352 /* snes9x_framework.framework */; };
 		1133991DAA2A1DD66B576BF4 /* EmulatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25410366398B74ED3596E397 /* EmulatorModel.swift */; };
 		295358B60DD299375F91B615 /* EmulatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25410366398B74ED3596E397 /* EmulatorModel.swift */; };
 		3000A9CF23418799007DC37F /* logo_freeze.png in Resources */ = {isa = PBXBuildFile; fileRef = EA3D300B0A260A3200BDACCC /* logo_freeze.png */; };
@@ -250,6 +252,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A13F0C1E5B7D4E2A9C6D1F04 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 30D15CEE22CE6B5A005BC352;
+			remoteInfo = "snes9x framework";
+		};
 		30714726230E379C00917F82 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -274,6 +283,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A13F0C1E5B7D4E2A9C6D1F01 /* ROMFileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ROMFileTests.swift; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		25410366398B74ED3596E397 /* EmulatorModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmulatorModel.swift; sourceTree = "<group>"; };
 		27D87969AAB4BED4E323CF68 /* S9xEngine+GameEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "S9xEngine+GameEngine.swift"; sourceTree = "<group>"; };
@@ -620,6 +630,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBEFE32EE1AE5E15C8BD193B /* Cocoa.framework in Frameworks */,
+				A13F0C1E5B7D4E2A9C6D1F03 /* snes9x_framework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -821,6 +832,7 @@
 		83D14FB5F3BFF0DCDD36B323 /* Snes9xTests */ = {
 			isa = PBXGroup;
 			children = (
+				A13F0C1E5B7D4E2A9C6D1F01 /* ROMFileTests.swift */,
 				BA742D65BA2BEC9270AB0E51 /* EmulatorModelTests.swift */,
 			);
 			name = Snes9xTests;
@@ -1273,6 +1285,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				A13F0C1E5B7D4E2A9C6D1F05 /* PBXTargetDependency */,
 			);
 			name = Snes9xTests;
 			productName = Snes9xTests;
@@ -1379,6 +1392,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F17D2D4E64EB84BBBFE04D57 /* EmulatorModelTests.swift in Sources */,
+				A13F0C1E5B7D4E2A9C6D1F02 /* ROMFileTests.swift in Sources */,
 				295358B60DD299375F91B615 /* EmulatorModel.swift in Sources */,
 				CD1EA931E230286D8D72231D /* GameWindowContent.swift in Sources */,
 			);
@@ -1508,6 +1522,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A13F0C1E5B7D4E2A9C6D1F05 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 30D15CEE22CE6B5A005BC352 /* snes9x framework */;
+			targetProxy = A13F0C1E5B7D4E2A9C6D1F04 /* PBXContainerItemProxy */;
+		};
 		30714727230E379C00917F82 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 30D15CEE22CE6B5A005BC352 /* snes9x framework */;

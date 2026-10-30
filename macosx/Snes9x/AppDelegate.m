@@ -555,6 +555,10 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
         return YES;
     }
 
+    NSAlert *alert = [NSAlert new];
+    alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"“%@” can't be opened.", @""), url.lastPathComponent];
+    alert.informativeText = NSLocalizedString(@"It isn't a Super Nintendo ROM.", @"");
+    [alert runModal];
     return NO;
 }
 

@@ -3292,8 +3292,19 @@ void QuitWithFatalError ( NSString *message)
     pthread_mutex_unlock(&keyLock);
 }
 
++ (BOOL)looksLikeROM:(NSURL *)fileURL
+{
+	return SNES9X_LooksLikeROM(fileURL);
+}
+
 - (BOOL)loadROM:(NSURL *)fileURL
 {
+	// Stopping the game can't be undone, so look at the file first.
+	if (!SNES9X_LooksLikeROM(fileURL))
+	{
+		return NO;
+	}
+
 	running = false;
 	frzselecting = false;
 

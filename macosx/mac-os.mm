@@ -299,7 +299,6 @@ static void Deinitialize (void);
 static void InitAutofire (void);
 static void ProcessInput (void);
 static void ChangeAutofireSettings (int, int);
-static void ChangeTurboRate (int);
 static void UpdateFreezeDefrostScreen (int, CGImageRef, uint8 *, CGContextRef);
 static void * MacSnes9xThread (void *);
 static inline void EmulationLoop (void);
@@ -2093,7 +2092,7 @@ static void ProcessInput (void)
     bool8           keys[MAC_MAX_PLAYERS][kNumButtons];
     bool8           gamepadButtons[MAC_MAX_PLAYERS][kNumButtons];
     bool8           isok, fnbtn, altbtn, tcbtn;
-    static bool8    toggleff = false, lastTimeTT = false, lastTimeFn = false, ffUp = false, ffDown = false;
+    static bool8    toggleff = false, lastTimeTT = false, lastTimeFn = false;
 
     if (rejectinput)
         return;
@@ -2112,7 +2111,6 @@ static void ProcessInput (void)
 
         lastTimeFn = true;
         lastTimeTT = false;
-        ffUp = ffDown = false;
 
         for (unsigned int i = 0; i < kNumFunctionButtons; i++)
         {
@@ -2319,28 +2317,6 @@ static void ProcessInput (void)
                 CopyPressedKeys(keys, gamepadButtons);
         }
 
-        if (ISpKeyIsPressed(keys, gamepadButtons, kISpFFUp))
-        {
-            if (!ffUp)
-            {
-                ChangeTurboRate(+1);
-                ffUp = true;
-            }
-        }
-        else
-            ffUp = false;
-
-        if (ISpKeyIsPressed(keys, gamepadButtons, kISpFFDown))
-        {
-            if (!ffDown)
-            {
-                ChangeTurboRate(-1);
-                ffDown = true;
-            }
-        }
-        else
-            ffDown = false;
-
         for (int i = 0; i < MAC_MAX_PLAYERS; ++i)
         {
             controlPad[i] = 0;
@@ -2497,21 +2473,6 @@ static void ChangeAutofireSettings (int player, int btn)
     else
         snprintf(msg, sizeof(msg), "Autofire %d: Off", player + 1);
 
-    S9xSetInfoString(msg);
-}
-
-static void ChangeTurboRate (int d)
-{
-    static char    msg[64];
-
-    macFastForwardRate += d;
-    if (macFastForwardRate < 1)
-        macFastForwardRate = 1;
-    else
-    if (macFastForwardRate > 15)
-        macFastForwardRate = 15;
-
-    snprintf(msg, sizeof(msg), "Turbo Rate: %d", macFastForwardRate);
     S9xSetInfoString(msg);
 }
 
@@ -3162,8 +3123,17 @@ void QuitWithFatalError ( NSString *message)
 
 - (void)stop
 {
+	// Let the emulation thread finish so the save is written from a stopped game.
+	running = false;
+	frzselecting = false;
+
+	while (!Settings.StopEmulation)
+	{
+		usleep(Settings.FrameTime);
+	}
+
 	SNES9X_Quit();
-    S9xExit();
+	cartOpen = false;
 }
 
 - (void)softwareReset
@@ -3395,6 +3365,12 @@ void QuitWithFatalError ( NSString *message)
 - (void)setVideoMode:(int)mode
 {
     videoMode = mode;
+}
+
+- (void)setMacFastForwardRate:(int)rate
+{
+    // constrains to 1 to 15
+    macFastForwardRate = MAX(1, MIN(rate, 15));
 }
 
 - (void)setMacFrameSkip:(int)_macFrameSkip

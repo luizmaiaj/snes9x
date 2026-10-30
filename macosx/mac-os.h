@@ -232,6 +232,7 @@ extern id<S9xInputDelegate> inputDelegate;
 
 - (void)setVideoMode:(int)videoMode;
 - (void)setMacFrameSkip:(int)_macFrameSkip;
+- (void)setMacFastForwardRate:(int)rate;
 - (void)setShowFPS:(BOOL)showFPS;
 
 - (void)setDeviceSetting:(S9xDeviceSetting)_deviceSetting;

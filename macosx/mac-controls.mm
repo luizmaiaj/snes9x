@@ -436,28 +436,6 @@ long ISpKeyIsPressed (bool8 keys[MAC_MAX_PLAYERS][kNumButtons], bool8 gamepadBut
             KeyIsPressed(keys, gamepadButtons, 6, kKeyAlt) ||
             KeyIsPressed(keys, gamepadButtons, 7, kKeyAlt);
 
-        case kISpFFDown:
-            return
-            KeyIsPressed(keys, gamepadButtons, 0, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 1, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 2, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 3, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 4, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 5, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 6, kKeyFFDown) ||
-            KeyIsPressed(keys, gamepadButtons, 7, kKeyFFDown);
-
-        case kISpFFUp:
-            return
-            KeyIsPressed(keys, gamepadButtons, 0, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 1, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 2, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 3, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 4, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 5, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 6, kKeyFFUp) ||
-            KeyIsPressed(keys, gamepadButtons, 7, kKeyFFUp);
-
         case kISpEsc:
             return
             KeyIsPressed(keys, gamepadButtons, 0, kKeyEsc) ||

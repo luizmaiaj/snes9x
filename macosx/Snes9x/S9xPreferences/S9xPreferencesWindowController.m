@@ -97,4 +97,15 @@
 	return NO;
 }
 
+- (void)joypadsChanged
+{
+	for ( S9xPreferencesViewController *viewController in self.tabViewController.childViewControllers )
+	{
+		if ( [viewController isKindOfClass:[S9xControlsPreferencesViewController class]] )
+		{
+			[((S9xControlsPreferencesViewController *)viewController) joypadsChanged];
+		}
+	}
+}
+
 @end

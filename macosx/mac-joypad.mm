@@ -46,6 +46,13 @@ std::unordered_map<JoypadCookie, JoypadCookieInfo> infoByCookie;
 std::unordered_map<JoypadInput, S9xButtonCode> buttonCodeByJoypadInput;
 std::unordered_map<JoypadDevice, std::string> namesByDevice;
 
+struct ConnectedJoypad {
+    struct JoypadDevice device;
+    uint32 port;
+};
+
+std::unordered_map<IOHIDDeviceRef, ConnectedJoypad> connectedJoypads;
+
 @interface NSData (S9xHexString)
 +(id)s9x_dataWithHexString:(NSString *)hex;
 @end
@@ -556,6 +563,7 @@ void AddDevice (IOHIDDeviceRef device)
     namesByDevice[deviceStruct] = s;
     uint32_t port = ((NSNumber *)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDLocationIDKey))).unsignedIntValue;
     deviceIndexByPort[port] = deviceStruct.index;
+    connectedJoypads[device] = { deviceStruct, port };
 
     CFMutableDictionaryRef properties = NULL;
 
@@ -679,7 +687,65 @@ void AddDevice (IOHIDDeviceRef device)
         infoByCookie[cookie] = info;
     }
 
-    CFRelease(properties);
+    if (properties != NULL)
+    {
+        CFRelease(properties);
+    }
+}
+
+bool IsJoypad (IOHIDDeviceRef device)
+{
+    NSNumber *usagePage = (NSNumber *)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDPrimaryUsagePageKey));
+    NSNumber *usage = (NSNumber *)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDPrimaryUsageKey));
+
+    return usagePage.intValue == kHIDPage_GenericDesktop && (usage.intValue == kHIDUsage_GD_GamePad || usage.intValue == kHIDUsage_GD_Joystick || usage.intValue == kHIDUsage_GD_Mouse);
+}
+
+// Also called for the devices SetUpHID has already added.
+void JoypadConnected (void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
+{
+    pthread_mutex_lock(&keyLock);
+    bool isNew = connectedJoypads.find(device) == connectedJoypads.end() && IsJoypad(device);
+
+    if (isNew)
+    {
+        AddDevice(device);
+    }
+    pthread_mutex_unlock(&keyLock);
+
+    if (isNew)
+    {
+        [inputDelegate joypadsChanged];
+    }
+}
+
+// The player and the button mapping stay, for when the pad comes back.
+void JoypadDisconnected (void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
+{
+    pthread_mutex_lock(&keyLock);
+    auto connected = connectedJoypads.find(device);
+
+    if (connected == connectedJoypads.end())
+    {
+        pthread_mutex_unlock(&keyLock);
+        return;
+    }
+
+    struct JoypadDevice joypad = connected->second.device;
+    deviceIndexByPort.erase(connected->second.port);
+    connectedJoypads.erase(connected);
+    allDevices.erase(joypad);
+    namesByDevice.erase(joypad);
+
+    // Its buttons would otherwise stay pressed, with no release ever coming.
+    auto player = playerNumByDevice.find(joypad);
+    if (player != playerNumByDevice.end() && player->second >= 0 && player->second < MAC_MAX_PLAYERS)
+    {
+        memset(pressedGamepadButtons[player->second], 0, sizeof(pressedGamepadButtons[player->second]));
+    }
+    pthread_mutex_unlock(&keyLock);
+
+    [inputDelegate joypadsChanged];
 }
 
 void ClearJoypad(uint32 vendorID, uint32 productID, uint32 index)
@@ -729,6 +795,8 @@ void SetUpHID (void)
     if (hidManager != NULL && IOHIDManagerOpen(hidManager, kIOHIDOptionsTypeNone) == kIOReturnSuccess)
     {
         IOHIDManagerRegisterInputValueCallback(hidManager, gamepadAction, NULL);
+        IOHIDManagerRegisterDeviceMatchingCallback(hidManager, JoypadConnected, NULL);
+        IOHIDManagerRegisterDeviceRemovalCallback(hidManager, JoypadDisconnected, NULL);
         IOHIDManagerScheduleWithRunLoop(hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 
 		CFMutableArrayRef matching = CFArrayCreateMutable(kCFAllocatorDefault, 4, &kCFTypeArrayCallBacks);
@@ -782,12 +850,7 @@ void SetUpHID (void)
 
         [orderedDevices removeObjectsAtIndexes:[orderedDevices indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop)
         {
-            IOHIDDeviceRef device = (__bridge IOHIDDeviceRef)obj;
-
-            NSNumber *usagePage = (NSNumber *)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDPrimaryUsagePageKey));
-            NSNumber *usage = (NSNumber *)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDPrimaryUsageKey));
-
-            return usagePage.intValue != kHIDPage_GenericDesktop || (usage.intValue != kHIDUsage_GD_GamePad && usage.intValue != kHIDUsage_GD_Joystick && usage.intValue != kHIDUsage_GD_Mouse);
+            return !IsJoypad((__bridge IOHIDDeviceRef)obj);
         }]];
 
         [orderedDevices sortUsingComparator:^NSComparisonResult(id a, id b)

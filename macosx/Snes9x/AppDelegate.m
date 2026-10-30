@@ -165,6 +165,22 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
         [self setButtonCode:buttonCode forKeyCode:self.keys[control].integerValue player:player];
     }
 
+    [self applyJoypadPrefs];
+
+	self.deviceSetting = Gamepads;
+
+    [self importKeySettings];
+    [self importGraphicsSettings];
+    [self applyEmulationSettings];
+
+    self.s9xEngine.cheatsEnabled = [defaults boolForKey:kEnableCheatsPref];
+
+    [defaults synchronize];
+}
+
+- (void)applyJoypadPrefs
+{
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
 	NSDictionary *joypadPlayerPrefs = [defaults objectForKey:kJoypadPlayerPrefs];
 
     for ( S9xJoypad *joypad in [self listJoypads])
@@ -217,16 +233,6 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
             }
         }
     }
-
-	self.deviceSetting = Gamepads;
-
-    [self importKeySettings];
-    [self importGraphicsSettings];
-    [self applyEmulationSettings];
-
-    self.s9xEngine.cheatsEnabled = [defaults boolForKey:kEnableCheatsPref];
-
-    [defaults synchronize];
 }
 
 - (void)setButtonCode:(S9xButtonCode)buttonCode forKeyCode:(int16)keyCode player:(int8)player
@@ -730,6 +736,13 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 - (void)deviceSettingChanged:(S9xDeviceSetting)deviceSetting
 {
     _deviceSetting = deviceSetting;
+}
+
+- (void)joypadsChanged
+{
+    [self applyJoypadPrefs];
+    [self.emulator gamepadsDidChange];
+    [self.preferencesWindowController joypadsChanged];
 }
 
 

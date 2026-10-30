@@ -265,6 +265,72 @@ final class EmulatorModelTests: XCTestCase {
         XCTAssertEqual(assignments.keysByPlayer[1], pro2.key)
     }
 
+    // MARK: Gamepads that connect and disconnect after launch
+
+    func testAGamepadConnectedAfterLaunchBecomesAnUnassignedPlayer1() {
+        let model = EmulatorModel(engine: FakeEngine())
+        let assignments = FakeGamepadAssignments()
+        model.gamepadAssignments = assignments
+        XCTAssertTrue(model.gamepads.isEmpty)
+
+        assignments.connected = [pro2]
+        model.gamepadsDidChange()
+
+        XCTAssertEqual(model.gamepads.map(\.key), [pro2.key])
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+        XCTAssertEqual(model.player1Gamepad?.key, pro2.key)
+    }
+
+    func testAGamepadConnectedAfterLaunchKeepsTheOtherPlayerItIsSavedFor() {
+        let model = EmulatorModel(engine: FakeEngine())
+        let assignments = FakeGamepadAssignments()
+        assignments.keysByPlayer = [1: sn30.key]
+        model.gamepadAssignments = assignments
+
+        assignments.connected = [sn30]
+        model.gamepadsDidChange()
+
+        XCTAssertNil(assignments.keysByPlayer[0])
+        XCTAssertEqual(assignments.keysByPlayer[1], sn30.key)
+        XCTAssertEqual(model.gamepads.map(\.key), [sn30.key])
+    }
+
+    func testAGamepadConnectedAfterLaunchLeavesAConnectedPlayer1Alone() {
+        let model = EmulatorModel(engine: FakeEngine())
+        let assignments = FakeGamepadAssignments()
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.gamepadAssignments = assignments
+
+        assignments.connected = [pro2, sn30]
+        model.gamepadsDidChange()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+        XCTAssertEqual(model.player1Gamepad?.key, pro2.key)
+        XCTAssertEqual(model.gamepads.count, 2)
+    }
+
+    func testPlayer1sGamepadDisconnectingThenReturningKeepsPlayer1() {
+        let model = EmulatorModel(engine: FakeEngine())
+        let assignments = FakeGamepadAssignments()
+        assignments.connected = [pro2, sn30]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.gamepadAssignments = assignments
+
+        assignments.connected = [sn30]
+        model.gamepadsDidChange()
+
+        XCTAssertEqual(model.gamepads.map(\.key), [sn30.key])
+        XCTAssertNil(model.player1Gamepad)
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key, "the other pad must not take Player 1")
+
+        assignments.connected = [pro2, sn30]
+        model.gamepadsDidChange()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+        XCTAssertEqual(model.player1Gamepad?.key, pro2.key)
+    }
+
     // MARK: No needless updates (an open toolbar menu closes on any update)
 
     private func changesPublished(by model: EmulatorModel, during action: () -> Void) -> Int {

@@ -43,7 +43,7 @@ public final class Gamepad: NSObject {
 /// Preferences → Controls. Players are numbered from 0.
 @objc(S9xGamepadAssignments)
 public protocol GamepadAssignments: NSObjectProtocol {
-    /// The gamepads the engine found when the app started.
+    /// The gamepads connected now.
     func connectedGamepads() -> [Gamepad]
 
     /// The key of the gamepad `player` uses, or nil when it has none.
@@ -71,7 +71,7 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// Whether the running game is paused.
     @Published private(set) var isPaused = false
 
-    /// The gamepads the engine found when the app started.
+    /// The gamepads connected now.
     @Published private(set) var gamepads: [Gamepad] = []
 
     /// Player 1's gamepad, or nil when Player 1 uses the keyboard only.
@@ -209,6 +209,20 @@ public final class EmulatorModel: NSObject, ObservableObject {
     func choosePlayer1Gamepad(_ gamepad: Gamepad?) {
         gamepadAssignments?.assignGamepad(withKey: gamepad?.key, toPlayer: 0)
         refreshGamepads()
+    }
+
+    /// Called when a gamepad connects or disconnects. One that connects can
+    /// become Player 1, as at launch. One that disconnects hands Player 1 to
+    /// nobody, so it is still Player 1 when it comes back.
+    @objc public func gamepadsDidChange() {
+        let known = gamepads.map(\.key)
+        let connected = gamepadAssignments?.connectedGamepads() ?? []
+
+        if connected.contains(where: { !known.contains($0.key) }) {
+            assignPlayer1GamepadIfNeeded()
+        } else {
+            refreshGamepads()
+        }
     }
 
     /// A gamepad no player uses does nothing, so when Player 1 has no

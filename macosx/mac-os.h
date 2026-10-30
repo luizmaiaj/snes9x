@@ -191,6 +191,7 @@ typedef NS_ENUM(uint32_t, S9xWatchPointFormat)
 @protocol S9xInputDelegate <NSObject>
 - (BOOL)handleInput:(S9xJoypadInput *)input fromJoypad:(S9xJoypad *)joypad;
 - (void)deviceSettingChanged:(S9xDeviceSetting)deviceSetting;
+- (void)joypadsChanged;
 @end
 
 extern id<S9xInputDelegate> inputDelegate;

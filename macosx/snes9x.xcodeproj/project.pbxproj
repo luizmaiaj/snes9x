@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1133991DAA2A1DD66B576BF4 /* EmulatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25410366398B74ED3596E397 /* EmulatorModel.swift */; };
+		295358B60DD299375F91B615 /* EmulatorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25410366398B74ED3596E397 /* EmulatorModel.swift */; };
 		3000A9CF23418799007DC37F /* logo_freeze.png in Resources */ = {isa = PBXBuildFile; fileRef = EA3D300B0A260A3200BDACCC /* logo_freeze.png */; };
 		3000A9D02341879B007DC37F /* logo_defrost.png in Resources */ = {isa = PBXBuildFile; fileRef = EA3D300C0A260A3200BDACCC /* logo_defrost.png */; };
 		3000A9D123418852007DC37F /* freeze_defrost.aiff in Resources */ = {isa = PBXBuildFile; fileRef = EA85C3560B4ECBD900F5F9C9 /* freeze_defrost.aiff */; };
@@ -240,6 +242,11 @@
 		30F72A8E29CCF8E2000235A8 /* S9xHexNumberFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 30F72A8D29CCF8E2000235A8 /* S9xHexNumberFormatter.m */; };
 		30F72BE929CF588B000235A8 /* S9xOpenMultipleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 30F72BE729CF588B000235A8 /* S9xOpenMultipleViewController.m */; };
 		30F72BEA29CF588B000235A8 /* S9xOpenMultipleViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 30F72BE829CF588B000235A8 /* S9xOpenMultipleViewController.xib */; };
+		ABC038EA3591C039B75A6C78 /* GameWindowContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4EC0394830E99EEE56A19C8 /* GameWindowContent.swift */; };
+		BAA3CC67F64FC30FDE76AF22 /* S9xEngine+GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D87969AAB4BED4E323CF68 /* S9xEngine+GameEngine.swift */; };
+		CD1EA931E230286D8D72231D /* GameWindowContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4EC0394830E99EEE56A19C8 /* GameWindowContent.swift */; };
+		EBEFE32EE1AE5E15C8BD193B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 839D87FE809F64891BECC203 /* Cocoa.framework */; };
+		F17D2D4E64EB84BBBFE04D57 /* EmulatorModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA742D65BA2BEC9270AB0E51 /* EmulatorModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -268,6 +275,8 @@
 
 /* Begin PBXFileReference section */
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		25410366398B74ED3596E397 /* EmulatorModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmulatorModel.swift; sourceTree = "<group>"; };
+		27D87969AAB4BED4E323CF68 /* S9xEngine+GameEngine.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "S9xEngine+GameEngine.swift"; sourceTree = "<group>"; };
 		302EEC9A22DAD0AB006D1502 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		302EEC9B22DAD0AB006D1502 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		302EEC9E22DAD0B1006D1502 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = System/Library/Frameworks/AGL.framework; sourceTree = SDKROOT; };
@@ -356,10 +365,12 @@
 		30F72BE629CF588B000235A8 /* S9xOpenMultipleViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = S9xOpenMultipleViewController.h; sourceTree = "<group>"; };
 		30F72BE729CF588B000235A8 /* S9xOpenMultipleViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = S9xOpenMultipleViewController.m; sourceTree = "<group>"; };
 		30F72BE829CF588B000235A8 /* S9xOpenMultipleViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = S9xOpenMultipleViewController.xib; sourceTree = "<group>"; };
+		839D87FE809F64891BECC203 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		85FEF90620DDB15B00C038E9 /* bml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = bml.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		85FEF90720DDB15C00C038E9 /* bml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bml.h; sourceTree = "<group>"; usesTabs = 1; };
 		85FEF90A20DDB18D00C038E9 /* sha256.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sha256.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		85FEF90B20DDB18D00C038E9 /* sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha256.h; sourceTree = "<group>"; usesTabs = 1; };
+		BA742D65BA2BEC9270AB0E51 /* EmulatorModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmulatorModelTests.swift; sourceTree = "<group>"; };
 		BF0B397A1FA5792F002B04D3 /* apu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = apu.cpp; sourceTree = "<group>"; };
 		BF0B397B1FA5792F002B04D3 /* apu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = apu.h; sourceTree = "<group>"; };
 		BF0B397E1FA5792F002B04D3 /* blargg_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = blargg_common.h; sourceTree = "<group>"; };
@@ -377,6 +388,7 @@
 		BF0B39AD1FA5792F002B04D3 /* resampler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = resampler.h; sourceTree = "<group>"; };
 		BF0B39DE1FA580F9002B04D3 /* msu1.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = msu1.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		BF0B39E21FA58124002B04D3 /* msu1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = msu1.h; sourceTree = "<group>"; usesTabs = 1; };
+		CD864F84BE2B8C6CD03CDCA0 /* Snes9xTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Snes9xTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF05677E0CF9971000C7877C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = /System/Library/Frameworks/QuartzCore.framework; sourceTree = "<absolute>"; };
 		CF2CFFD30F10F2C000B8B35E /* spc7110emu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spc7110emu.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		CF2CFFD40F10F2C000B8B35E /* spc7110dec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spc7110dec.cpp; sourceTree = "<group>"; usesTabs = 1; };
@@ -413,6 +425,7 @@
 		CFEFAE8E10EAC92B00FB081A /* snes_ntsc_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = snes_ntsc_config.h; sourceTree = "<group>"; };
 		CFEFAE8F10EAC92B00FB081A /* snes_ntsc_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = snes_ntsc_impl.h; sourceTree = "<group>"; };
 		CFEFAE9010EAC92B00FB081A /* snes_ntsc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = snes_ntsc.h; sourceTree = "<group>"; };
+		E4EC0394830E99EEE56A19C8 /* GameWindowContent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GameWindowContent.swift; sourceTree = "<group>"; };
 		EA0C95D808364AAE009307B4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		EA16053E0639E655004412AB /* mac-netplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "mac-netplay.h"; sourceTree = "<group>"; };
 		EA1605500639E735004412AB /* mac-netplay.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = "mac-netplay.mm"; sourceTree = "<group>"; };
@@ -602,19 +615,36 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9DB2B85EB4BA88F957BEBE54 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBEFE32EE1AE5E15C8BD193B /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0EF8C74BF02058C9DE96E995 /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				839D87FE809F64891BECC203 /* Cocoa.framework */,
+			);
+			name = "OS X";
+			sourceTree = "<group>";
+		};
 		195DF8C9FE9D4F0611CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				30D15CEF22CE6B5A005BC352 /* snes9x_framework.framework */,
 				30714715230E379500917F82 /* Snes9x.app */,
+				CD864F84BE2B8C6CD03CDCA0 /* Snes9xTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		20286C29FDCF999611CA2CEA /* Snes9x CVS */ = {
+		20286C29FDCF999611CA2CEA = {
 			isa = PBXGroup;
 			children = (
 				20286C2AFDCF999611CA2CEA /* Sources */,
@@ -624,6 +654,7 @@
 				3082C41D2378BC280081CA7C /* ReClassicfication */,
 				195DF8C9FE9D4F0611CA2CBB /* Products */,
 				3045A1EB22D03C420092B97D /* Frameworks */,
+				83D14FB5F3BFF0DCDD36B323 /* Snes9xTests */,
 			);
 			name = "Snes9x CVS";
 			sourceTree = "<group>";
@@ -675,6 +706,7 @@
 				307C860A22D22C87001B879E /* libz.tbd */,
 				3045A1EE22D03C4B0092B97D /* Cocoa.framework */,
 				3045A1EC22D03C430092B97D /* AppKit.framework */,
+				0EF8C74BF02058C9DE96E995 /* OS X */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -697,6 +729,7 @@
 				30F72BE629CF588B000235A8 /* S9xOpenMultipleViewController.h */,
 				30F72BE729CF588B000235A8 /* S9xOpenMultipleViewController.m */,
 				30F72BE829CF588B000235A8 /* S9xOpenMultipleViewController.xib */,
+				73B2ADCC32EDD3573EF2852B /* SwiftUI */,
 			);
 			path = Snes9x;
 			sourceTree = "<group>";
@@ -772,6 +805,26 @@
 				306937DB26362B2400007ABB /* S9xSoundPreferencesViewController.xib */,
 			);
 			path = S9xPreferences;
+			sourceTree = "<group>";
+		};
+		73B2ADCC32EDD3573EF2852B /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				25410366398B74ED3596E397 /* EmulatorModel.swift */,
+				E4EC0394830E99EEE56A19C8 /* GameWindowContent.swift */,
+				27D87969AAB4BED4E323CF68 /* S9xEngine+GameEngine.swift */,
+			);
+			name = SwiftUI;
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		83D14FB5F3BFF0DCDD36B323 /* Snes9xTests */ = {
+			isa = PBXGroup;
+			children = (
+				BA742D65BA2BEC9270AB0E51 /* EmulatorModelTests.swift */,
+			);
+			name = Snes9xTests;
+			path = Snes9xTests;
 			sourceTree = "<group>";
 		};
 		BF0B39791FA5792F002B04D3 /* apu */ = {
@@ -1209,6 +1262,23 @@
 			productReference = 30D15CEF22CE6B5A005BC352 /* snes9x_framework.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		F02BBFC25ECE5BF33AD54A67 /* Snes9xTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 58D3110C1B8E28326E936871 /* Build configuration list for PBXNativeTarget "Snes9xTests" */;
+			buildPhases = (
+				062A4932E49B122D68A3EF27 /* Sources */,
+				9DB2B85EB4BA88F957BEBE54 /* Frameworks */,
+				F55634F0877D79988A7758F1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Snes9xTests;
+			productName = Snes9xTests;
+			productReference = CD864F84BE2B8C6CD03CDCA0 /* Snes9xTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1242,12 +1312,14 @@
 				en,
 				Base,
 			);
-			mainGroup = 20286C29FDCF999611CA2CEA /* Snes9x CVS */;
+			mainGroup = 20286C29FDCF999611CA2CEA;
+			productRefGroup = 195DF8C9FE9D4F0611CA2CBB /* Products */;
 			projectDirPath = "";
 			projectRoot = ..;
 			targets = (
 				30714714230E379500917F82 /* Snes9x */,
 				30D15CEE22CE6B5A005BC352 /* snes9x framework */,
+				F02BBFC25ECE5BF33AD54A67 /* Snes9xTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1292,9 +1364,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F55634F0877D79988A7758F1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		062A4932E49B122D68A3EF27 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F17D2D4E64EB84BBBFE04D57 /* EmulatorModelTests.swift in Sources */,
+				295358B60DD299375F91B615 /* EmulatorModel.swift in Sources */,
+				CD1EA931E230286D8D72231D /* GameWindowContent.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		30714711230E379500917F82 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1317,6 +1406,9 @@
 				30CF849527AEF5AF002B37A9 /* S9xCheatsViewController.m in Sources */,
 				30D709C1236F7E3200AAB7C3 /* S9xPreferencesWindowController.m in Sources */,
 				304B366C262E82B800F8DC8E /* S9xPreferencesConstants.m in Sources */,
+				1133991DAA2A1DD66B576BF4 /* EmulatorModel.swift in Sources */,
+				ABC038EA3591C039B75A6C78 /* GameWindowContent.swift in Sources */,
+				BAA3CC67F64FC30FDE76AF22 /* S9xEngine+GameEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1490,7 +1582,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = S4YHUE5Y65;
+				DEVELOPMENT_TEAM = 9T8V5DM9MV;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1498,7 +1590,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = Snes9x/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.63;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -1506,6 +1598,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -1545,7 +1638,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				INFOPLIST_FILE = Snes9x/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.63;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -1553,6 +1646,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -1596,7 +1690,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DGL_SILENCE_DEPRECATION";
@@ -1655,7 +1749,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_CFLAGS = "-DGL_SILENCE_DEPRECATION";
@@ -1666,6 +1760,36 @@
 				SKIP_INSTALL = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		59884172FA3956E42826A704 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snes9x.macos.snes9xTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		99DFB54143384138B31C96EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snes9x.macos.snes9xTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -1756,6 +1880,15 @@
 			buildConfigurations = (
 				30D15CF822CE6B5A005BC352 /* Release */,
 				30D15CF922CE6B5A005BC352 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		58D3110C1B8E28326E936871 /* Build configuration list for PBXNativeTarget "Snes9xTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				59884172FA3956E42826A704 /* Release */,
+				99DFB54143384138B31C96EA /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -100,7 +100,7 @@ struct GameView: NSViewRepresentable {
 
 /// The content of the game window.
 struct GameWindowContent: View {
-    let model: EmulatorModel
+    @ObservedObject var model: EmulatorModel
 
     var body: some View {
         GameView(model: model)
@@ -114,7 +114,57 @@ struct GameWindowContent: View {
                     }
                     .help("Open a ROM file and start the game")
                 }
+
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button {
+                        model.togglePause()
+                    } label: {
+                        if model.isPaused {
+                            Label("Resume", systemImage: "play.fill")
+                        } else {
+                            Label("Pause", systemImage: "pause.fill")
+                        }
+                    }
+                    .help(model.isPaused ? "Resume the game" : "Pause the game")
+                    .disabled(!model.isRunning)
+
+                    Button {
+                        model.reset()
+                    } label: {
+                        Label("Reset", systemImage: "arrow.counterclockwise")
+                    }
+                    .help("Restart the game, like the console's reset button. Pause the game first.")
+                    .disabled(!model.isPaused)
+
+                    Menu {
+                        Picker("Player 1", selection: player1Selection) {
+                            Text("Keyboard").tag(String?.none)
+                            ForEach(model.gamepads, id: \.key) { gamepad in
+                                Text(gamepad.name).tag(String?.some(gamepad.key))
+                            }
+                        }
+                        .pickerStyle(.inline)
+                    } label: {
+                        // Icon only: a 512 pt window has no room for the name,
+                        // so the icon and the tooltip say what Player 1 uses.
+                        Label(player1Title, systemImage: model.player1Gamepad == nil ? "keyboard" : "gamecontroller")
+                    }
+                    .help("\(player1Title). Choose the gamepad that controls Player 1.")
+                }
             }
+    }
+
+    private var player1Title: String {
+        "Player 1: \(model.player1Gamepad?.name ?? "Keyboard")"
+    }
+
+    /// Player 1's gamepad key, or nil for the keyboard only.
+    private var player1Selection: Binding<String?> {
+        Binding {
+            model.player1Gamepad?.key
+        } set: { key in
+            model.choosePlayer1Gamepad(model.gamepads.first { $0.key == key })
+        }
     }
 }
 

@@ -82,6 +82,13 @@
 
 }
 
+- (void)viewWillAppear
+{
+	// The game window's toolbar can change Player 1's device too.
+	[self selectDeviceForPlayer:self.playerPopUp.selectedTag];
+	[super viewWillAppear];
+}
+
 - (void)refresh
 {
 	if (self.devicePopUp.selectedItem.tag < 0)

@@ -29,7 +29,7 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 NSWindowFrameAutosaveName const kCheatsWindowIdentifier = @"s9xCheatsWindow";
 NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderWindow";
 
-@interface AppDelegate () <S9xCheatFinderDelegate>
+@interface AppDelegate () <S9xCheatFinderDelegate, S9xGamepadAssignments>
 @property (nonatomic, strong) S9xEmulatorModel *emulator;
 @end
 
@@ -47,6 +47,9 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     {
         return [weakSelf openURL:url];
     };
+    self.s9xEngine.emulationDelegate = self.emulator;
+    self.emulator.gamepadAssignments = self;
+    [self.emulator assignPlayer1GamepadIfNeeded];
 
     NSWindow *gameWindow = [[NSWindow alloc] initWithContentRect:s9xView.frame styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:NO];
 
@@ -325,6 +328,62 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     playersDict[@(player).stringValue] = [self prefsKeyForVendorID:vendorID productID:productID index:index];
 
     [NSUserDefaults.standardUserDefaults setObject:[playersDict copy] forKey:kJoypadPlayerPrefs];
+}
+
+- (NSArray<S9xGamepad *> *)connectedGamepads
+{
+    NSMutableArray<S9xGamepad *> *gamepads = [NSMutableArray new];
+
+    for (S9xJoypad *joypad in [self listJoypads])
+    {
+        NSString *key = [self prefsKeyForVendorID:joypad.vendorID productID:joypad.productID index:joypad.index];
+        [gamepads addObject:[[S9xGamepad alloc] initWithKey:key name:joypad.name]];
+    }
+
+    return gamepads;
+}
+
+- (NSString *)gamepadKeyForPlayer:(NSInteger)player
+{
+    return [[NSUserDefaults.standardUserDefaults objectForKey:kJoypadPlayerPrefs] objectForKey:@(player).stringValue];
+}
+
+- (NSInteger)playerForGamepadKey:(NSString *)key
+{
+    NSDictionary<NSString *, NSString *> *playersDict = [NSUserDefaults.standardUserDefaults objectForKey:kJoypadPlayerPrefs];
+
+    for (NSString *player in playersDict)
+    {
+        if ([playersDict[player] isEqualToString:key])
+        {
+            return player.integerValue;
+        }
+    }
+
+    return -1;
+}
+
+- (void)assignGamepadWithKey:(NSString *)key toPlayer:(NSInteger)player
+{
+    uint32 vendorID = 0;
+    uint32 productID = 0;
+    uint32 index = 0;
+
+    // The player's previous pad stops driving it now, not after a relaunch.
+    if ([self getValuesFromString:[self gamepadKeyForPlayer:player] vendorID:&vendorID productID:&productID index:&index])
+    {
+        int8 oldPlayer = -1;
+        [self.s9xEngine setPlayer:-1 forVendorID:vendorID productID:productID index:index oldPlayer:&oldPlayer];
+    }
+
+    // 0:0:0 is what Preferences → Controls saves for Keyboard.
+    vendorID = 0;
+    productID = 0;
+    index = 0;
+    [self getValuesFromString:key vendorID:&vendorID productID:&productID index:&index];
+
+    [self setPlayer:(int8)player forVendorID:vendorID productID:productID index:index];
+    [NSUserDefaults.standardUserDefaults synchronize];
 }
 
 - (BOOL)setButton:(S9xButtonCode)button forVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index cookie:(uint32)cookie value:(int32)value

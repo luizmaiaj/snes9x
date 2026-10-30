@@ -14,3 +14,19 @@ extension S9xEngine: GameEngine {
         return s9xView
     }
 }
+
+/// Keeps the toolbar's pause state in step with pauses from Esc, a click on
+/// the game and the Emulation menu.
+extension EmulatorModel: S9xEmulationDelegate {
+    public nonisolated func gameLoaded() {
+        engineStateDidChange()
+    }
+
+    public nonisolated func emulationPaused() {
+        engineStateDidChange()
+    }
+
+    public nonisolated func emulationResumed() {
+        engineStateDidChange()
+    }
+}

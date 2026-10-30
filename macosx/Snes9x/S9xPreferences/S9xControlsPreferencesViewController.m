@@ -47,16 +47,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-	AppDelegate *appDelegate = (AppDelegate *)NSApp.delegate;
-	NSUInteger joypadIndex = 0;
-	for (S9xJoypad *joypad in [appDelegate listJoypads])
-	{
-		NSMenuItem *item = [NSMenuItem new];
-		item.title = joypad.name;
-		item.tag = joypadIndex++;
-		item.representedObject = joypad;
-		[self.devicePopUp.menu addItem:item];
-	}
+	[self addJoypadItems];
 
 	// collect all S9xButtonConfigTextFields within subviews
 	NSMutableArray *configTextFields = [[NSMutableArray alloc] init];
@@ -80,6 +71,40 @@
 	// select Keyboard as default
 	[self selectDeviceForPlayer:0];
 
+}
+
+- (void)addJoypadItems
+{
+	AppDelegate *appDelegate = (AppDelegate *)NSApp.delegate;
+	NSUInteger joypadIndex = 0;
+	for (S9xJoypad *joypad in [appDelegate listJoypads])
+	{
+		NSMenuItem *item = [NSMenuItem new];
+		item.title = joypad.name;
+		item.tag = joypadIndex++;
+		item.representedObject = joypad;
+		[self.devicePopUp.menu addItem:item];
+	}
+}
+
+- (void)joypadsChanged
+{
+	if (!self.isViewLoaded)
+	{
+		return;
+	}
+
+	for (NSMenuItem *item in [self.devicePopUp.menu.itemArray copy])
+	{
+		if (item.representedObject != nil)
+		{
+			[self.devicePopUp.menu removeItem:item];
+		}
+	}
+
+	[self addJoypadItems];
+	[self selectDeviceForPlayer:self.playerPopUp.selectedTag];
+	[self refresh];
 }
 
 - (void)viewWillAppear
@@ -283,17 +308,15 @@
 {
 	AppDelegate *appDelegate = (AppDelegate *)NSApp.delegate;
 
+	NSString *key = nil;
+
 	if (sender.selectedTag >= 0)
 	{
 		S9xJoypad *joypad = sender.selectedItem.representedObject;
-		[appDelegate setPlayer:self.playerPopUp.selectedTag forVendorID:joypad.vendorID productID:joypad.productID index:joypad.index];
-	}
-	else
-	{
-		[appDelegate setPlayer:self.playerPopUp.selectedTag forVendorID:0 productID:0 index:0];
+		key = [appDelegate prefsKeyForVendorID:joypad.vendorID productID:joypad.productID index:joypad.index];
 	}
 
-	[NSUserDefaults.standardUserDefaults synchronize];
+	[appDelegate assignGamepadWithKey:key toPlayer:self.playerPopUp.selectedTag];
 	[self refresh];
 }
 

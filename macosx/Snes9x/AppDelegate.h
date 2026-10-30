@@ -41,6 +41,7 @@ extern NSWindowFrameAutosaveName const kMainWindowIdentifier;
 
 - (NSArray<S9xJoypad *> *)listJoypads;
 - (void)setPlayer:(int8)player forVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index;
+- (void)assignGamepadWithKey:(NSString *)key toPlayer:(NSInteger)player;
 - (BOOL)setButton:(S9xButtonCode)button forVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index cookie:(uint32)cookie value:(int32)value;
 - (void)clearJoypadForVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index buttonCode:(S9xButtonCode)buttonCode;
 - (NSString *)labelForVendorID:(uint32)vendorID productID:(uint32)productID cookie:(uint32)cookie value:(int32)value;

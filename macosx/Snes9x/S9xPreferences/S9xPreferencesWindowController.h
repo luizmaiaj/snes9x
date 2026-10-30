@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface S9xPreferencesWindowController : NSWindowController
 - (BOOL)handleInput:(S9xJoypadInput *)input fromJoypad:(S9xJoypad *)joypad;
+- (void)joypadsChanged;
 @end
 
 NS_ASSUME_NONNULL_END

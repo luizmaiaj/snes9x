@@ -1,12 +1,8 @@
 ## Unreleased
 
 ### Added
-- macOS: Emulation → Turbo Rate picks the Fast Forward speed, 1× to 15×. It works during play and is remembered after a relaunch
-
-### Changed
-- macOS: the turbo rate no longer has keyboard shortcuts; Q and W, and the Increase and Decrease FF Speed rows in Preferences → Controls, are gone
+- macOS: a gamepad switched on after launch works straight away, without a relaunch. It drives the player it is saved for, or becomes Player 1 if Player 1 has no connected pad, and it appears in the toolbar's Player 1 menu and in Preferences → Controls (#7)
 
 ### Fixed
-- macOS: ⌘Q quits while a game is running, instead of lowering the turbo rate
-- macOS: quitting no longer beeps, and it stops the game before saving
-- macOS: opening a ROM from Finder while Snes9x isn't running now starts the game, instead of showing an empty window
+- macOS: a gamepad that disconnects leaves the Player 1 menu and Preferences → Controls, doesn't leave a held button stuck, and keeps its player and button mapping for when it comes back (#7)
+- macOS: changing a player's device in Preferences → Controls stops the previous gamepad driving that player straight away, instead of after a relaunch (#8)

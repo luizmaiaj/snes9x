@@ -52,6 +52,9 @@ extern NSWindowFrameAutosaveName const kMainWindowIdentifier;
 - (NSString *)prefValueForCookie:(uint32)cookie value:(int32)value;
 - (BOOL)getValuesFromString:(NSString *)str cookie:(uint32 *)cookie value:(int32 *)value;
 
++ (void)registerDefaultSettings;
++ (void)applyGameSettingsToEngine:(S9xEngine *)engine;
+
 - (void)setVideoMode:(int)videoMode;
 - (void)setMacFrameSkip:(int)_macFrameSkip;
 - (void)setShowFPS:(BOOL)showFPS;

@@ -1,9 +1,11 @@
 ## Unreleased
 
 ### Added
-- macOS: with two games open, the toolbar shows game 2's own Pause, Reset, Save State and Load State buttons, each marked with a 2 (#18)
-- macOS: each game has its own gamepad. The second game takes a free pad when it opens, and a menu with a 2 chooses its pad, the keyboard or nothing. A pad or the keyboard in use by one game can't be chosen for the other (#18)
-- macOS: Swap Sound moves the sound to the other game, and Swap Gamepads swaps the two games' pads and keyboard in one step. Both games keep running (#18)
+- macOS: Preferences → Controls has new rows for Open ROM, Open Second ROM, Reset, Swap Sound and Swap Gamepads, so a gamepad button can trigger them. Each press does what the toolbar button does, and does nothing while that button is disabled or when Snes9x isn't the frontmost app. With two games open, Reset acts on the game that gamepad controls (#20)
 
 ### Changed
-- macOS: Open Second ROM's tooltip no longer says the second game has no gamepad (#18)
+- macOS: the second game now uses the settings from Preferences, such as video mode and sound interpolation, instead of defaults. A change made while it's running applies the next time it opens (#18)
+
+### Known issues
+- macOS: the file panels Open ROM and Open Second ROM open still need a mouse or keyboard (#20)
+- macOS: pressing a gamepad's Home button can also make macOS open its games app, which stops bound commands until Snes9x is back in front (#23)

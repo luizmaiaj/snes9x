@@ -150,6 +150,7 @@
 			[configTextField addObserver:self forKeyPath:@"joypadInput" options:NSKeyValueObservingOptionNew context:NULL];
 
 			configTextField.disableKeyboardInput = NO;
+			configTextField.enabled = configTextField.tag < kNumButtons;
 		}
 	}
 	else
@@ -190,6 +191,7 @@
 			[configTextField addObserver:self forKeyPath:@"joypadInput" options:NSKeyValueObservingOptionNew context:NULL];
 
 			configTextField.disableKeyboardInput = YES;
+			configTextField.enabled = YES;
 		}
 	}
 }

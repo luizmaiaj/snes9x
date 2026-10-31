@@ -3438,7 +3438,7 @@ NSString * const S9xSecondGameArgument = @"--s9x-second-game";
 	return [folder stringByAppendingPathComponent:path.lastPathComponent];
 }
 
-+ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName
++ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName configure:(void (^)(S9xEngine *engine))configure
 {
 	[NSApplication sharedApplication];
 
@@ -3455,6 +3455,8 @@ NSString * const S9xSecondGameArgument = @"--s9x-second-game";
 	gameMuted = true;
 
 	static S9xEngine *engine = [S9xEngine new];
+
+	configure(engine);
 
 	if (![engine loadROM:fileURL])
 	{

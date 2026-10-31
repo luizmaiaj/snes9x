@@ -96,10 +96,8 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     [self.s9xEngine quit];
 }
 
-- (void)setupDefaults
++ (void)registerDefaultSettings
 {
-    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
-
     NSDictionary *defaultSettings = @{
         kKeyboardPrefs : @{
             @(kUp).stringValue : @(kVK_UpArrow),
@@ -157,7 +155,28 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
         kDisableSpriteLimitPref : @(NO),
     };
 
-    [defaults registerDefaults:defaultSettings];
+    [NSUserDefaults.standardUserDefaults registerDefaults:defaultSettings];
+}
+
+// What Preferences sets for a game. A second game's process has no app delegate.
++ (void)applyGameSettingsToEngine:(S9xEngine *)engine
+{
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+
+    [engine setMacFastForwardRate:(int)[defaults integerForKey:kTurboRatePref]];
+    [engine setVideoMode:(int)[defaults integerForKey:kVideoModePref]];
+    [engine setMacFrameSkip:(int)[defaults integerForKey:kMacFrameSkipPref]];
+    [engine setShowFPS:[defaults boolForKey:kShowFPSPref]];
+    engine.cheatsEnabled = [defaults boolForKey:kEnableCheatsPref];
+
+    [self applyEmulationSettingsToEngine:engine];
+}
+
+- (void)setupDefaults
+{
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+
+    [AppDelegate registerDefaultSettings];
 	[defaults setBool:NO forKey:@"NSWindowAssertWhenDisplayCycleLimitReached"];
 	[defaults synchronize];
 
@@ -714,7 +733,11 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 
 - (void)applyEmulationSettings
 {
-    S9xEngine *engine = self.s9xEngine;
+    [AppDelegate applyEmulationSettingsToEngine:self.s9xEngine];
+}
+
++ (void)applyEmulationSettingsToEngine:(S9xEngine *)engine
+{
     NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
 
     [engine setSuperFXClockSpeedPercent:(uint32_t)[defaults integerForKey:kSuperFXClockSpeedPercentPref]];
@@ -772,6 +795,17 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 - (void)deviceSettingChanged:(S9xDeviceSetting)deviceSetting
 {
     _deviceSetting = deviceSetting;
+}
+
+- (void)performCommand:(S9xButtonCode)command forSecondGame:(BOOL)forSecondGame
+{
+    // Like the keyboard, a command is for the app in front.
+    if (!NSApp.isActive || NSApp.modalWindow != nil)
+    {
+        return;
+    }
+
+    [self.emulator performPadCommand:(S9xPadCommand)(command - kCommandOpenROM) forSecondGame:forSecondGame];
 }
 
 - (void)joypadsChanged

@@ -10,18 +10,32 @@ import SwiftUI
 import snes9x_framework
 
 /// Shows the frames of a game running in another process, on each screen
-/// refresh, scaled without smoothing like the first game.
+/// refresh, scaled without smoothing like the first game. It never takes the
+/// keyboard: the first game's view keeps it and passes on what's meant for here.
 final class SecondGameView: NSView {
     private let channel: S9xFrameChannel
+    private let onPausedChange: @MainActor (Bool) -> Void
+    private let dimmedView = NSView()
     private var refresh: CADisplayLink?
+    private var isPaused = false
 
-    init(channel: S9xFrameChannel) {
+    init(channel: S9xFrameChannel, onPausedChange: @escaping @MainActor (Bool) -> Void) {
         self.channel = channel
+        self.onPausedChange = onPausedChange
         super.init(frame: NSRect(x: 0, y: 0, width: 512, height: 478))
         wantsLayer = true
         layer?.backgroundColor = NSColor.black.cgColor
         layer?.contentsGravity = .resize
         layer?.magnificationFilter = .nearest
+
+        // The same dimming as the first game's pause.
+        dimmedView.frame = bounds
+        dimmedView.autoresizingMask = [.width, .height]
+        dimmedView.wantsLayer = true
+        dimmedView.layer?.backgroundColor = NSColor.black.cgColor
+        dimmedView.layer?.opacity = 0.5
+        dimmedView.isHidden = true
+        addSubview(dimmedView)
     }
 
     required init?(coder: NSCoder) {
@@ -44,7 +58,21 @@ final class SecondGameView: NSView {
         refresh = link
     }
 
+    /// A click pauses, like a click on the first game.
+    override func mouseDown(with event: NSEvent) {
+        if !isPaused {
+            channel.add(.togglePause)
+        }
+    }
+
     @objc private func showNewestFrame() {
+        if channel.isPaused != isPaused {
+            isPaused = channel.isPaused
+            onPausedChange(isPaused)
+        }
+
+        dimmedView.isHidden = !isPaused || channel.isChoosingSlot
+
         guard let image = channel.copyNewestImage() else {
             return
         }
@@ -60,8 +88,9 @@ final class SecondGameView: NSView {
 /// channel that `SecondGameView` shows.
 final class SecondGameProcess: SecondGameRunner {
     private var process: Process?
+    private var channel: S9xFrameChannel?
 
-    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView? {
+    func start(_ url: URL, onPausedChange: @escaping @MainActor (Bool) -> Void, onExit: @escaping @MainActor () -> Void) -> NSView? {
         guard S9xEngine.looksLikeROM(url),
               let executable = Bundle.main.executableURL,
               let channel = S9xFrameChannel.create() else {
@@ -73,6 +102,7 @@ final class SecondGameProcess: SecondGameRunner {
         process.arguments = [S9xSecondGameArgument, channel.name, url.path]
         process.terminationHandler = { _ in
             Task { @MainActor in
+                S9xEngine.sendInput(toSecondGame: nil)
                 onExit()
             }
         }
@@ -84,14 +114,50 @@ final class SecondGameProcess: SecondGameRunner {
         }
 
         self.process = process
+        self.channel = channel
+        S9xEngine.sendInput(toSecondGame: channel)
 
-        return SecondGameView(channel: channel)
+        return SecondGameView(channel: channel, onPausedChange: onPausedChange)
     }
 
     func stop() {
         process?.terminationHandler = nil
         process?.terminate()
         process = nil
+        channel = nil
+        S9xEngine.sendInput(toSecondGame: nil)
+    }
+
+    func togglePause() {
+        channel?.add(.togglePause)
+    }
+
+    func reset() {
+        channel?.add(.reset)
+    }
+
+    func saveState() {
+        channel?.add(.saveState)
+    }
+
+    func loadState() {
+        channel?.add(.loadState)
+    }
+
+    func setMuted(_ muted: Bool) {
+        channel?.isMuted = muted
+    }
+
+    func setInput(_ key: String?) {
+        S9xEngine.setSecondGameUsesKeyboard(key == EmulatorModel.keyboardKey)
+
+        let parts = (key ?? "").split(separator: ":").compactMap { UInt32($0) }
+
+        if parts.count == 3, key != EmulatorModel.keyboardKey {
+            S9xEngine.setSecondGameGamepadVendorID(parts[0], productID: parts[1], index: parts[2])
+        } else {
+            S9xEngine.setSecondGameGamepadVendorID(0, productID: 0, index: 0)
+        }
     }
 }
 
@@ -255,6 +321,20 @@ struct GameView: NSViewRepresentable {
     }
 }
 
+/// A toolbar icon with a 2 on it, like Open Second ROM's: this button is game 2's.
+struct GameTwoIcon: View {
+    let systemName: String
+
+    var body: some View {
+        Image(systemName: systemName)
+            .overlay(alignment: .bottomTrailing) {
+                Text(verbatim: "2")
+                    .font(.system(size: 9, weight: .bold))
+                    .offset(x: 5, y: 4)
+            }
+    }
+}
+
 /// The content of the game window.
 struct GameWindowContent: View {
     @ObservedObject var model: EmulatorModel
@@ -287,7 +367,7 @@ struct GameWindowContent: View {
                                 }
                         }
                     }
-                    .help("Open a ROM beside the running game. It runs muted, with no gamepad yet.")
+                    .help("Open a ROM beside the running game. It starts muted.")
                     .disabled(!model.isRunning || model.secondGameView != nil)
                 }
 
@@ -331,8 +411,11 @@ struct GameWindowContent: View {
                     Menu {
                         Picker("Player 1", selection: player1Selection) {
                             Text("Keyboard").tag(String?.none)
+                                .disabled(!model.player1CanUse(nil))
                             ForEach(model.gamepads, id: \.key) { gamepad in
-                                Text(gamepad.name).tag(String?.some(gamepad.key))
+                                Text(gamepad.name)
+                                    .tag(String?.some(gamepad.key))
+                                    .disabled(!model.player1CanUse(gamepad.key))
                             }
                         }
                         .pickerStyle(.inline)
@@ -343,11 +426,128 @@ struct GameWindowContent: View {
                     }
                     .help("\(player1Title). Choose the gamepad that controls Player 1.")
                 }
+
+                // Only with two games, so one game's toolbar stays as it was.
+                if model.hasSecondGame {
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Button {
+                            model.swapSound()
+                        } label: {
+                            Label("Swap Sound", systemImage: "speaker.wave.2")
+                        }
+                        .help("Game \(model.secondGameHasSound ? 2 : 1) has the sound. Move it to the other game.")
+
+                        Button {
+                            model.swapGamepads()
+                        } label: {
+                            Label("Swap Gamepads", systemImage: "arrow.left.arrow.right")
+                        }
+                        .help("Swap the two games' gamepads and keyboard.")
+                        .disabled(!model.canSwapGamepads)
+                    }
+
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Button {
+                            model.toggleSecondGamePause()
+                        } label: {
+                            Label {
+                                Text(model.isSecondGamePaused ? "Resume Game 2" : "Pause Game 2")
+                            } icon: {
+                                GameTwoIcon(systemName: model.isSecondGamePaused ? "play.fill" : "pause.fill")
+                            }
+                        }
+                        .help(model.isSecondGamePaused ? "Resume game 2" : "Pause game 2")
+
+                        Button {
+                            model.resetSecondGame()
+                        } label: {
+                            Label {
+                                Text("Reset Game 2")
+                            } icon: {
+                                GameTwoIcon(systemName: "arrow.counterclockwise")
+                            }
+                        }
+                        .help("Restart game 2, like the console's reset button. Pause it first.")
+                        .disabled(!model.isSecondGamePaused)
+
+                        Button {
+                            model.saveSecondGameState()
+                        } label: {
+                            Label {
+                                Text("Save State Game 2")
+                            } icon: {
+                                GameTwoIcon(systemName: "tray.and.arrow.down")
+                            }
+                        }
+                        .help("Save game 2 to a slot. Pick one with the arrow keys and Return, or press Esc to cancel.")
+
+                        Button {
+                            model.loadSecondGameState()
+                        } label: {
+                            Label {
+                                Text("Load State Game 2")
+                            } icon: {
+                                GameTwoIcon(systemName: "tray.and.arrow.up")
+                            }
+                        }
+                        .help("Load game 2 from a slot. Pick one with the arrow keys and Return, or press Esc to cancel.")
+
+                        Menu {
+                            Picker("Game 2", selection: secondGameSelection) {
+                                Text("None").tag(String?.none)
+                                Text("Keyboard")
+                                    .tag(String?.some(EmulatorModel.keyboardKey))
+                                    .disabled(!model.secondGameCanUse(EmulatorModel.keyboardKey))
+                                ForEach(model.gamepads, id: \.key) { gamepad in
+                                    Text(gamepad.name)
+                                        .tag(String?.some(gamepad.key))
+                                        .disabled(!model.secondGameCanUse(gamepad.key))
+                                }
+                            }
+                            .pickerStyle(.inline)
+                        } label: {
+                            Label {
+                                Text(secondGameTitle)
+                            } icon: {
+                                GameTwoIcon(systemName: secondGameIcon)
+                            }
+                        }
+                        .help("\(secondGameTitle). Choose what controls game 2.")
+                    }
+                }
             }
     }
 
     private var player1Title: String {
         "Player 1: \(model.player1Gamepad?.name ?? "Keyboard")"
+    }
+
+    private var secondGameTitle: String {
+        "Game 2: \(secondGameInputName)"
+    }
+
+    private var secondGameInputName: String {
+        switch model.secondGameInput {
+        case nil:
+            return "None"
+        case EmulatorModel.keyboardKey:
+            return "Keyboard"
+        case let key:
+            return model.gamepads.first { $0.key == key }?.name ?? "Disconnected gamepad"
+        }
+    }
+
+    private var secondGameIcon: String {
+        model.secondGameInput == EmulatorModel.keyboardKey ? "keyboard" : "gamecontroller"
+    }
+
+    /// The second game's input key, or nil for none.
+    private var secondGameSelection: Binding<String?> {
+        Binding {
+            model.secondGameInput
+        } set: { key in
+            model.chooseSecondGameInput(key)
+        }
     }
 
     /// Player 1's gamepad key, or nil for the keyboard only.

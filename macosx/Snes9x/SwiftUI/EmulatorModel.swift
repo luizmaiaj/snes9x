@@ -30,17 +30,34 @@ public protocol GameEngine: NSObjectProtocol {
 
     /// Opens the slot picker to load a saved game, like the Defrost key.
     func loadState()
+
+    /// Silences the game, or brings its sound back.
+    func setMuted(_ muted: Bool)
 }
 
 /// Runs a second game beside the first. Two games can't share a process, as
 /// the core keeps its state in globals.
 protocol SecondGameRunner: AnyObject {
     /// Starts `url` and returns the view showing it, or nil when it can't start.
-    /// `onExit` runs if the game ends without `stop()` being called.
-    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView?
+    /// `onPausedChange` runs when the game pauses or resumes, however that
+    /// happened; `onExit` runs if the game ends without `stop()` being called.
+    func start(_ url: URL, onPausedChange: @escaping @MainActor (Bool) -> Void, onExit: @escaping @MainActor () -> Void) -> NSView?
 
     /// Ends the game, which saves it first.
     func stop()
+
+    func togglePause()
+
+    /// Restarts the game and resumes it.
+    func reset()
+
+    func saveState()
+    func loadState()
+    func setMuted(_ muted: Bool)
+
+    /// Gives the game the input with `key`: a gamepad's, `EmulatorModel.keyboardKey`,
+    /// or nil for none.
+    func setInput(_ key: String?)
 }
 
 /// A connected gamepad, identified by the key Snes9x saves its settings under.
@@ -91,6 +108,15 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// The view showing the second game, or nil when there's only one game.
     @Published private(set) var secondGameView: NSView?
 
+    /// Whether the second game is paused.
+    @Published private(set) var isSecondGamePaused = false
+
+    /// Whether the second game has the sound. Only one game ever does.
+    @Published private(set) var secondGameHasSound = false
+
+    /// The second game's gamepad key, `keyboardKey`, or nil for no input.
+    @Published private(set) var secondGameInput: String?
+
     /// The gamepads connected now.
     @Published private(set) var gamepads: [Gamepad] = []
 
@@ -118,7 +144,7 @@ public final class EmulatorModel: NSObject, ObservableObject {
     var secondGameRunner: SecondGameRunner = SecondGameProcess()
 
     /// What Preferences → Controls saves for a player on the keyboard.
-    private static let keyboardKey = "0:0:0"
+    static let keyboardKey = "0:0:0"
 
     private let engine: GameEngine
     private var defaultsObserver: AnyCancellable?
@@ -183,13 +209,18 @@ public final class EmulatorModel: NSObject, ObservableObject {
             return
         }
 
-        secondGameView = secondGameRunner.start(url) { [weak self] in
-            self?.secondGameView = nil
+        secondGameView = secondGameRunner.start(url) { [weak self] paused in
+            self?.isSecondGamePaused = paused
+        } onExit: { [weak self] in
+            self?.secondGameDidEnd()
         }
 
         if secondGameView == nil {
             cantOpenHandler?(url)
+            return
         }
+
+        assignSecondGameGamepadIfNeeded()
     }
 
     /// Ends the second game and gives the window back to the first.
@@ -199,7 +230,135 @@ public final class EmulatorModel: NSObject, ObservableObject {
         }
 
         secondGameRunner.stop()
+        secondGameDidEnd()
+    }
+
+    /// The first game takes back the window and the sound.
+    private func secondGameDidEnd() {
         secondGameView = nil
+        isSecondGamePaused = false
+        secondGameInput = nil
+
+        if secondGameHasSound {
+            secondGameHasSound = false
+            engine.setMuted(false)
+        }
+
+        refreshGamepads()
+    }
+
+    func toggleSecondGamePause() {
+        if hasSecondGame {
+            secondGameRunner.togglePause()
+        }
+    }
+
+    /// Restarts the second game. Like `reset()`, only while it's paused.
+    func resetSecondGame() {
+        if isSecondGamePaused {
+            secondGameRunner.reset()
+        }
+    }
+
+    func saveSecondGameState() {
+        if hasSecondGame {
+            secondGameRunner.saveState()
+        }
+    }
+
+    func loadSecondGameState() {
+        if hasSecondGame {
+            secondGameRunner.loadState()
+        }
+    }
+
+    /// Moves the sound to the other game.
+    func swapSound() {
+        guard hasSecondGame else {
+            return
+        }
+
+        secondGameHasSound.toggle()
+        engine.setMuted(secondGameHasSound)
+        secondGameRunner.setMuted(!secondGameHasSound)
+    }
+
+    // MARK: - The second game's input
+
+    /// Whether Player 1 is on the keyboard, not a gamepad.
+    private var firstGameUsesKeyboard: Bool {
+        let key = gamepadAssignments?.gamepadKey(forPlayer: 0)
+        return key == nil || key == EmulatorModel.keyboardKey
+    }
+
+    /// Whether the first game holds the input with `key`.
+    private func firstGameHolds(_ key: String) -> Bool {
+        if key == EmulatorModel.keyboardKey {
+            return firstGameUsesKeyboard
+        }
+
+        return (gamepadAssignments?.player(forGamepadKey: key) ?? -1) >= 0
+    }
+
+    /// Whether the second game can take the input with `key`; nil is always fine.
+    func secondGameCanUse(_ key: String?) -> Bool {
+        guard let key else {
+            return true
+        }
+
+        return !firstGameHolds(key)
+    }
+
+    /// Whether Player 1 can take the gamepad with `key`; nil is the keyboard.
+    func player1CanUse(_ key: String?) -> Bool {
+        (key ?? EmulatorModel.keyboardKey) != secondGameInput
+    }
+
+    /// Gives the second game an input the first game isn't using.
+    func chooseSecondGameInput(_ key: String?) {
+        guard hasSecondGame, secondGameCanUse(key) else {
+            return
+        }
+
+        setSecondGameInput(key)
+    }
+
+    private func setSecondGameInput(_ key: String?) {
+        secondGameInput = key
+        secondGameRunner.setInput(key)
+    }
+
+    /// Whether the games have different inputs to swap. The first game always
+    /// has one, so only a keyboard and nothing can't swap.
+    var canSwapGamepads: Bool {
+        hasSecondGame && !(firstGameUsesKeyboard && secondGameInput == nil)
+    }
+
+    /// Swaps the two games' inputs in one step; both games keep running.
+    func swapGamepads() {
+        guard canSwapGamepads, let assignments = gamepadAssignments else {
+            return
+        }
+
+        let firstInput = firstGameUsesKeyboard ? EmulatorModel.keyboardKey : assignments.gamepadKey(forPlayer: 0)
+        let secondInput = secondGameInput
+
+        setSecondGameInput(nil)
+        assignments.assignGamepad(withKey: secondInput == EmulatorModel.keyboardKey ? nil : secondInput, toPlayer: 0)
+        setSecondGameInput(firstInput)
+        refreshGamepads()
+    }
+
+    /// A gamepad no game uses does nothing, so the second game takes the first
+    /// free one. The keyboard stays with the first game until it's asked for.
+    private func assignSecondGameGamepadIfNeeded() {
+        guard hasSecondGame, secondGameInput == nil, let assignments = gamepadAssignments else {
+            return
+        }
+
+        if let free = assignments.connectedGamepads().first(where: { assignments.player(forGamepadKey: $0.key) < 0 }) {
+            setSecondGameInput(free.key)
+        }
     }
 
     // MARK: - Pause and reset
@@ -296,6 +455,10 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
     /// Makes `gamepad` control Player 1; nil leaves Player 1 the keyboard only.
     func choosePlayer1Gamepad(_ gamepad: Gamepad?) {
+        guard player1CanUse(gamepad?.key) else {
+            return
+        }
+
         gamepadAssignments?.assignGamepad(withKey: gamepad?.key, toPlayer: 0)
         refreshGamepads()
     }
@@ -309,6 +472,7 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
         if connected.contains(where: { !known.contains($0.key) }) {
             assignPlayer1GamepadIfNeeded()
+            assignSecondGameGamepadIfNeeded()
         } else {
             refreshGamepads()
         }
@@ -327,7 +491,7 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
         guard player1Key != EmulatorModel.keyboardKey,
               !connected.contains(where: { $0.key == player1Key }),
-              let free = connected.first(where: { assignments.player(forGamepadKey: $0.key) < 0 }) else {
+              let free = connected.first(where: { assignments.player(forGamepadKey: $0.key) < 0 && $0.key != secondGameInput }) else {
             refreshGamepads()
             return
         }

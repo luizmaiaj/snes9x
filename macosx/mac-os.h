@@ -173,8 +173,19 @@ void CopyPressedKeys(uint8 keys[MAC_MAX_PLAYERS][kNumButtons], uint8 gamepadButt
 @property (nonatomic, assign) S9xButtonCode buttonCode;
 @end
 
+/// What the window asks of the process running the second game.
+typedef NS_OPTIONS(uint32, S9xSecondGameRequest)
+{
+	S9xSecondGameRequestTogglePause = 1 << 0,
+	S9xSecondGameRequestReset = 1 << 1,
+	S9xSecondGameRequestSaveState = 1 << 2,
+	S9xSecondGameRequestLoadState = 1 << 3
+};
+
 /// Frames of a second game, passed from the process running it to the window
-/// showing it through shared memory.
+/// showing it through shared memory. Its input and requests go the other way:
+/// only the window's process reads the gamepads and the keyboard, so a pad can
+/// never drive both games.
 @interface S9xFrameChannel : NSObject
 
 /// What the other process opens the channel by.
@@ -192,10 +203,45 @@ void CopyPressedKeys(uint8 keys[MAC_MAX_PLAYERS][kNumButtons], uint8 gamepadButt
 /// The newest frame, or NULL when there's none since the last call.
 - (CGImageRef)copyNewestImage CF_RETURNS_RETAINED;
 
+/// Whether the second game's sound is off. It starts off.
+@property (nonatomic, assign, getter=isMuted) BOOL muted;
+
+/// Set by the second game.
+@property (nonatomic, assign, getter=isPaused) BOOL paused;
+@property (nonatomic, assign, getter=isChoosingSlot) BOOL choosingSlot;
+
+- (void)setGamepadButton:(int)button pressed:(BOOL)pressed;
+- (void)setKeyButton:(int)button player:(int)player pressed:(BOOL)pressed;
+- (void)setRawKey:(int)keyCode pressed:(BOOL)pressed;
+
+/// Lets go of everything held on the gamepad.
+- (void)releaseGamepad;
+
+/// Lets go of everything held on the keyboard.
+- (void)releaseKeyboard;
+
+/// Sets what's held in the arrays CopyPressedKeys fills, on top of what's there.
+- (void)addKeys:(bool8 [MAC_MAX_PLAYERS][kNumButtons])keys gamepadButtons:(bool8 [MAC_MAX_PLAYERS][kNumButtons])gamepadButtons;
+
+/// Fills the raw keyboard array the slot picker reads.
+- (void)copyRawKeys:(bool8 *)rawKeys;
+
+- (void)addRequest:(S9xSecondGameRequest)request;
+
+/// Returns the requests made since the last call.
+- (S9xSecondGameRequest)takeRequests;
+
 @end
 
 /// Set in a process that runs a second game: frames go here, not to the screen.
 extern S9xFrameChannel	*secondGameChannel;
+
+/// Whether this process's game is silent. Moving the sound between two games
+/// sets it; other code only mutes for a moment and comes back to it.
+extern bool8			gameMuted;
+
+/// Set in the window's process while a second game runs: its input goes here.
+extern S9xFrameChannel	*secondGameInput;
 
 /// The first argument that makes the app run a second game for another process.
 extern NSString * const S9xSecondGameArgument;
@@ -255,6 +301,8 @@ extern id<S9xInputDelegate> inputDelegate;
 - (void)quit;
 - (void)resume;
 
+- (void)setMuted:(BOOL)muted;
+
 - (BOOL)setButton:(S9xButtonCode)button forKey:(int16)key player:(int8)player oldButton:(S9xButtonCode *)oldButton oldPlayer:(int8 *)oldPlayer oldKey:(int16 *)oldKey;
 - (void)clearButton:(S9xButtonCode)button forPlayer:(int8)player;
 
@@ -278,9 +326,20 @@ extern id<S9xInputDelegate> inputDelegate;
 /// the same ROM can run as both games.
 + (NSString *)secondGameSavePath:(NSString *)path;
 
-/// Runs a ROM in this process for a window in another one, muted and without
-/// gamepads, until that process stops it. Returns only if the game can't start.
+/// Runs a ROM in this process for a window in another one, muted, with input
+/// from the channel, until that process stops it. Returns only if the game
+/// can't start.
 + (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName;
+
+/// Sends the second game's input to `channel`; nil ends that and gives the
+/// keyboard back to this game.
++ (void)sendInputToSecondGame:(S9xFrameChannel *)channel;
+
+/// Gives the second game a gamepad; zeros leave it none.
++ (void)setSecondGameGamepadVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index;
+
+/// Gives the second game the keyboard, or gives it back to this game.
++ (void)setSecondGameUsesKeyboard:(BOOL)usesKeyboard;
 
 - (BOOL)loadROM:(NSURL *)fileURL;
 - (BOOL)loadMultiple:(NSArray<NSURL *> *)fileURLs;

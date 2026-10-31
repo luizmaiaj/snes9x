@@ -126,6 +126,8 @@ void ReleaseHID (void);
 std::unordered_set<struct JoypadDevice> ListJoypads (void);
 std::string NameForDevice(struct JoypadDevice device);
 
+void SetSecondGameJoypad(uint32 vendorID, uint32 productID, uint32 index);
+
 void SetPlayerForJoypad(int8 playerNum, uint32 vendorID, uint32 productID, uint32 index, int8 *oldPlayerNum);
 bool SetButtonCodeForJoypadControl(uint32 vendorID, uint32 productID, uint32 index, uint32 cookie, int32 value, S9xButtonCode buttonCode, bool overwrite, S9xButtonCode *oldButtonCode);
 void ClearButtonCodeForJoypad(uint32 vendorID, uint32 productID, uint32 index, S9xButtonCode buttonCode);

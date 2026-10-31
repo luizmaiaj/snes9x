@@ -213,6 +213,10 @@ bool8               pressedKeys[MAC_MAX_PLAYERS][kNumButtons] = { 0 };
 bool8               pressedGamepadButtons[MAC_MAX_PLAYERS][kNumButtons] = { 0 };
 bool8               pressedFunctionButtons[kNumFunctionButtons] = { 0 };
 bool8               pressedRawKeyboardButtons[MAC_NUM_KEYCODES] = { 0 };
+
+// Set in the window's process while a second game runs.
+S9xFrameChannel     *secondGameInput = nil;
+static bool         secondGameUsesKeyboard = false;
 bool8               heldFunctionButtons[kNumFunctionButtons] = { 0 };
 pthread_mutex_t     keyLock;
 
@@ -328,7 +332,45 @@ void CopyPressedKeys(bool8 keys[MAC_MAX_PLAYERS][kNumButtons], bool8 gamepadButt
     pthread_mutex_lock(&keyLock);
     memcpy(keys, pressedKeys, sizeof(pressedKeys));
     memcpy(gamepadButtons, pressedGamepadButtons, sizeof(pressedGamepadButtons));
+    [secondGameChannel addKeys:keys gamepadButtons:gamepadButtons];
     pthread_mutex_unlock(&keyLock);
+}
+
+static void HandleSecondGameRequests (void)
+{
+    S9xSecondGameRequest requests = [secondGameChannel takeRequests];
+
+    if (requests & S9xSecondGameRequestReset)
+    {
+        SNES9X_SoftReset();
+        SNES9X_Go();
+        pauseEmulation = false;
+        [s9xView updatePauseOverlay];
+    }
+
+    if (requests & S9xSecondGameRequestTogglePause)
+    {
+        pauseEmulation = !pauseEmulation;
+        [s9xView updatePauseOverlay];
+    }
+
+    if (requests & S9xSecondGameRequestSaveState)
+    {
+        saveStateRequested = true;
+    }
+
+    if (requests & S9xSecondGameRequestLoadState)
+    {
+        loadStateRequested = true;
+    }
+
+    if (gameMuted != secondGameChannel.muted)
+    {
+        gameMuted = secondGameChannel.muted;
+        S9xSetSoundMute(gameMuted);
+    }
+
+    secondGameChannel.paused = pauseEmulation;
 }
 
 static inline void EmulationLoop (void)
@@ -390,6 +432,11 @@ static inline void EmulationLoop (void)
     {
         while (running)
         {
+            if (secondGameChannel != nil)
+            {
+                HandleSecondGameRequests();
+            }
+
             ProcessInput();
 
             if (!pauseEmulation)
@@ -1714,6 +1761,7 @@ int PromptFreezeDefrost (Boolean freezing)
     const char          letters[] = "123456789ABC", *filename;
 
     frzselecting = true;
+    secondGameChannel.choosingSlot = YES;
 	[s9xView updatePauseOverlay];
     oldInactiveMode = inactiveMode;
     if (inactiveMode == 3)
@@ -2051,10 +2099,11 @@ int PromptFreezeDefrost (Boolean freezing)
     free(draw);
     free(back);
 
-    S9xSetSoundMute(false);
+    S9xSetSoundMute(gameMuted);
 
     inactiveMode = oldInactiveMode;
     frzselecting = false;
+    secondGameChannel.choosingSlot = NO;
 
 	bool8	wasPaused = pauseEmulation;
 	pauseEmulation = false;
@@ -2546,7 +2595,7 @@ static void Initialize (void)
 	InitGraphics();
 	InitMacSound();
 
-	// Every process sees every pad, and the second game's pads aren't chosen yet.
+	// Its input comes from the window's process, which reads every pad.
 	if (secondGameChannel == nil)
 	{
 		SetUpHID();
@@ -2797,6 +2846,30 @@ void QuitWithFatalError ( NSString *message)
 	newWindow.acceptsMouseMovedEvents = YES;
 }
 
+// A slot picker needs the keyboard, whichever game holds it.
+static bool KeyboardGoesToSecondGame (void)
+{
+    return secondGameInput != nil && !frzselecting && (secondGameUsesKeyboard || secondGameInput.choosingSlot);
+}
+
+static void SetModifierKey (struct S9xButton button, bool pressed)
+{
+    if (button.buttonCode < 0 || button.buttonCode >= kNumButtons || button.player < 0 || button.player >= MAC_MAX_PLAYERS)
+    {
+        return;
+    }
+
+    if (pressed && KeyboardGoesToSecondGame())
+    {
+        [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:YES];
+    }
+    else
+    {
+        pressedKeys[button.player][button.buttonCode] = pressed;
+        [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:pressed];
+    }
+}
+
 - (void)keyDown:(NSEvent *)event
 {
     if (!NSApp.isActive)
@@ -2805,6 +2878,16 @@ void QuitWithFatalError ( NSString *message)
     }
 
     pthread_mutex_lock(&keyLock);
+
+    if (KeyboardGoesToSecondGame())
+    {
+        S9xButton secondGameButton = keyCodes[event.keyCode];
+        [secondGameInput setKeyButton:secondGameButton.buttonCode player:secondGameButton.player pressed:YES];
+        [secondGameInput setRawKey:event.keyCode pressed:YES];
+        pthread_mutex_unlock(&keyLock);
+        return;
+    }
+
     S9xButton button = keyCodes[event.keyCode];
     if ( button.buttonCode >= 0 && button.buttonCode < kNumButtons && button.player >= 0 && button.player <= MAC_MAX_PLAYERS)
     {
@@ -2839,6 +2922,10 @@ void QuitWithFatalError ( NSString *message)
         pressedKeys[button.player][button.buttonCode] = false;
     }
 
+    // Lets go in both games: the key may have gone down before a slot picker opened.
+    [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:NO];
+    [secondGameInput setRawKey:event.keyCode pressed:NO];
+
     for ( NSUInteger i = 0; i < kNumFunctionButtons; ++i )
     {
         if ( event.keyCode == functionButtons[i])
@@ -2865,29 +2952,10 @@ void QuitWithFatalError ( NSString *message)
 
     NSEventModifierFlags flags = event.modifierFlags;
 
-    struct S9xButton button = keyCodes[kVK_Shift];
-    if (button.buttonCode >= 0 && button.buttonCode < kNumButtons && button.player >= 0 && button.player < MAC_MAX_PLAYERS)
-    {
-        pressedKeys[button.player][button.buttonCode] = (flags & NSEventModifierFlagShift) != 0;
-    }
-
-    button = keyCodes[kVK_Command];
-    if (button.buttonCode >= 0 && button.buttonCode < kNumButtons && button.player >= 0 && button.player < MAC_MAX_PLAYERS)
-    {
-        pressedKeys[button.player][button.buttonCode] = (flags & NSEventModifierFlagCommand) != 0;
-    }
-
-    button = keyCodes[kVK_Control];
-    if (button.buttonCode >= 0 && button.buttonCode < kNumButtons && button.player >= 0 && button.player < MAC_MAX_PLAYERS)
-    {
-        pressedKeys[button.player][button.buttonCode] = (flags & NSEventModifierFlagControl) != 0;
-    }
-
-    button = keyCodes[kVK_Option];
-    if (button.buttonCode >= 0 && button.buttonCode < kNumButtons && button.player >= 0 && button.player < MAC_MAX_PLAYERS)
-    {
-        pressedKeys[button.player][button.buttonCode] = (flags & NSEventModifierFlagOption) != 0;
-    }
+    SetModifierKey(keyCodes[kVK_Shift], (flags & NSEventModifierFlagShift) != 0);
+    SetModifierKey(keyCodes[kVK_Command], (flags & NSEventModifierFlagCommand) != 0);
+    SetModifierKey(keyCodes[kVK_Control], (flags & NSEventModifierFlagControl) != 0);
+    SetModifierKey(keyCodes[kVK_Option], (flags & NSEventModifierFlagOption) != 0);
 
     pthread_mutex_unlock(&keyLock);
 }
@@ -3224,6 +3292,17 @@ NSString * const S9xSecondGameArgument = @"--s9x-second-game";
 	[s9xView updatePauseOverlay];
 }
 
+- (void)setMuted:(BOOL)muted
+{
+	gameMuted = muted;
+
+	// The slot picker comes back to gameMuted when it closes.
+	if (!frzselecting)
+	{
+		S9xSetSoundMute(muted);
+	}
+}
+
 - (NSArray<S9xJoypad *> *)listJoypads
 {
     pthread_mutex_lock(&keyLock);
@@ -3373,6 +3452,8 @@ NSString * const S9xSecondGameArgument = @"--s9x-second-game";
 		return 1;
 	}
 
+	gameMuted = true;
+
 	static S9xEngine *engine = [S9xEngine new];
 
 	if (![engine loadROM:fileURL])
@@ -3408,9 +3489,44 @@ NSString * const S9xSecondGameArgument = @"--s9x-second-game";
 		dispatch_async(queue, finish);
 	}
 
+	// The slot picker waits on these directly for a key to come back up.
+	static dispatch_source_t rawKeys = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);
+	dispatch_source_set_timer(rawKeys, DISPATCH_TIME_NOW, 10 * NSEC_PER_MSEC, 5 * NSEC_PER_MSEC);
+	dispatch_source_set_event_handler(rawKeys, ^
+	{
+		[secondGameChannel copyRawKeys:pressedRawKeyboardButtons];
+	});
+	dispatch_resume(rawKeys);
+
 	[NSApp run];
 
 	return 0;
+}
+
++ (void)sendInputToSecondGame:(S9xFrameChannel *)channel
+{
+	pthread_mutex_lock(&keyLock);
+	secondGameInput = channel;
+	secondGameUsesKeyboard = false;
+	pthread_mutex_unlock(&keyLock);
+
+	SetSecondGameJoypad(0, 0, 0);
+}
+
++ (void)setSecondGameGamepadVendorID:(uint32)vendorID productID:(uint32)productID index:(uint32)index
+{
+	SetSecondGameJoypad(vendorID, productID, index);
+}
+
++ (void)setSecondGameUsesKeyboard:(BOOL)usesKeyboard
+{
+	pthread_mutex_lock(&keyLock);
+	secondGameUsesKeyboard = usesKeyboard;
+
+	// What's held now won't get its release in the game that held it.
+	memset(pressedKeys, 0, sizeof(pressedKeys));
+	[secondGameInput releaseKeyboard];
+	pthread_mutex_unlock(&keyLock);
 }
 
 - (BOOL)loadROM:(NSURL *)fileURL

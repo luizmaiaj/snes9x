@@ -22,6 +22,7 @@ final class FakeEngine: NSObject, GameEngine, @unchecked Sendable {
     private(set) var loads = 0
     var running = false
     var paused = false
+    var muted = false
 
     func makeGameView() -> NSView {
         viewsMade += 1
@@ -47,6 +48,7 @@ final class FakeEngine: NSObject, GameEngine, @unchecked Sendable {
 
     func saveState() { saves += 1 }
     func loadState() { loads += 1 }
+    func setMuted(_ muted: Bool) { self.muted = muted }
 }
 
 /// Stands in for the process that runs a second game.
@@ -55,14 +57,28 @@ final class FakeSecondGameRunner: SecondGameRunner {
     private(set) var started: [URL] = []
     private(set) var stops = 0
     private(set) var onExit: (@MainActor () -> Void)?
+    private(set) var onPausedChange: (@MainActor (Bool) -> Void)?
+    private(set) var pauseToggles = 0
+    private(set) var resets = 0
+    private(set) var saves = 0
+    private(set) var loads = 0
+    private(set) var muted = true
+    private(set) var input: String?
 
-    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView? {
+    func start(_ url: URL, onPausedChange: @escaping @MainActor (Bool) -> Void, onExit: @escaping @MainActor () -> Void) -> NSView? {
         started.append(url)
+        self.onPausedChange = onPausedChange
         self.onExit = onExit
         return view
     }
 
     func stop() { stops += 1 }
+    func togglePause() { pauseToggles += 1 }
+    func reset() { resets += 1 }
+    func saveState() { saves += 1 }
+    func loadState() { loads += 1 }
+    func setMuted(_ muted: Bool) { self.muted = muted }
+    func setInput(_ key: String?) { input = key }
 }
 
 /// Stands in for the app delegate's player assignments in the preferences.
@@ -767,7 +783,35 @@ final class GameWindowTests: XCTestCase {
         let labels = toolbarLabels(in: window)
 
         XCTAssertEqual(labels.firstIndex(of: "Open Second ROM"), try XCTUnwrap(labels.firstIndex(of: "Open ROM")) + 1)
-        XCTAssertEqual(item.toolTip, "Open a ROM beside the running game. It runs muted, with no gamepad yet.")
+        XCTAssertEqual(item.toolTip, "Open a ROM beside the running game. It starts muted.")
+    }
+
+    func testOneGameShowsNoneOfTheSecondGamesButtons() {
+        let window = makeWindow()
+        GameWindowHosting.install(in: window, model: EmulatorModel(engine: FakeEngine()))
+
+        let labels = toolbarLabels(in: window)
+
+        XCTAssertFalse(labels.contains("Swap Sound"), "items: \(labels)")
+        XCTAssertFalse(labels.contains("Swap Gamepads"), "items: \(labels)")
+        XCTAssertFalse(labels.contains("Pause Game 2"), "items: \(labels)")
+    }
+
+    func testTwoGamesShowEachGamesOwnButtons() throws {
+        let engine = FakeEngine()
+        engine.running = true
+        let model = EmulatorModel(engine: engine)
+        model.secondGameRunner = FakeSecondGameRunner()
+        model.refreshEmulationState()
+        model.openSecondGame(URL(fileURLWithPath: "/roms/two.smc"))
+        let window = makeWindow()
+        GameWindowHosting.install(in: window, model: model)
+
+        let labels = toolbarLabels(in: window)
+
+        for label in ["Pause", "Reset", "Save State", "Load State", "Swap Sound", "Swap Gamepads", "Pause Game 2", "Reset Game 2", "Save State Game 2", "Load State Game 2"] {
+            XCTAssertTrue(labels.contains(label), "\(label) missing from \(labels)")
+        }
     }
 
     func testGameFillsTheHeightCentredWithTheSNESAspectRatio() {
@@ -948,5 +992,313 @@ final class GameWindowTests: XCTestCase {
 
         XCTAssertTrue(model.gameView?.window === window)
         XCTAssertTrue(window.makeFirstResponder(model.gameView))
+    }
+}
+
+@MainActor
+final class SecondGameControlsTests: XCTestCase {
+    private var engine: FakeEngine!
+    private var runner: FakeSecondGameRunner!
+    private var assignments: FakeGamepadAssignments!
+    private var model: EmulatorModel!
+
+    override func setUp() {
+        super.setUp()
+        engine = FakeEngine()
+        engine.running = true
+        runner = FakeSecondGameRunner()
+        assignments = FakeGamepadAssignments()
+        model = EmulatorModel(engine: engine)
+        model.secondGameRunner = runner
+        model.gamepadAssignments = assignments
+        model.refreshEmulationState()
+    }
+
+    private func openSecondGame() {
+        model.openSecondGame(URL(fileURLWithPath: "/roms/two.smc"))
+    }
+
+    func testSecondGameTakesAFreeGamepadAndLeavesTheFirstGamesAlone() {
+        assignments.connected = [pro2, sn30]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+
+        openSecondGame()
+
+        XCTAssertEqual(model.secondGameInput, sn30.key)
+        XCTAssertEqual(runner.input, sn30.key)
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+    }
+
+    func testWithNoFreeGamepadTheSecondGameHasNoInput() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+
+        openSecondGame()
+
+        XCTAssertNil(model.secondGameInput)
+        XCTAssertNil(runner.input)
+    }
+
+    func testAGamepadInUseByOneGameCantBeChosenForTheOther() {
+        assignments.connected = [pro2, sn30]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+        openSecondGame()
+
+        XCTAssertFalse(model.secondGameCanUse(pro2.key))
+        model.chooseSecondGameInput(pro2.key)
+        XCTAssertEqual(model.secondGameInput, sn30.key)
+
+        XCTAssertFalse(model.player1CanUse(sn30.key))
+        model.choosePlayer1Gamepad(sn30)
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+    }
+
+    func testTheKeyboardBelongsToOneGame() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: "0:0:0"]
+        model.refreshGamepads()
+        openSecondGame()
+        model.chooseSecondGameInput(nil)
+
+        // Player 1 is on the keyboard, so the second game can't have it.
+        XCTAssertFalse(model.secondGameCanUse(EmulatorModel.keyboardKey))
+        model.chooseSecondGameInput(EmulatorModel.keyboardKey)
+        XCTAssertNil(model.secondGameInput)
+
+        // With Player 1 on a pad it's free, and Player 1 can't go back to it.
+        model.choosePlayer1Gamepad(pro2)
+        model.chooseSecondGameInput(EmulatorModel.keyboardKey)
+        XCTAssertEqual(runner.input, EmulatorModel.keyboardKey)
+        XCTAssertFalse(model.player1CanUse(nil))
+        model.choosePlayer1Gamepad(nil)
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+    }
+
+    func testSwapGamepadsSwapsBothGamesInOneStep() {
+        assignments.connected = [pro2, sn30]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+        openSecondGame()
+
+        model.swapGamepads()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], sn30.key)
+        XCTAssertEqual(runner.input, pro2.key)
+        XCTAssertEqual(model.player1Gamepad?.key, sn30.key)
+        XCTAssertEqual(runner.stops, 0)
+    }
+
+    func testSwapGamepadsMovesTheKeyboardToo() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+        openSecondGame()
+        model.chooseSecondGameInput(EmulatorModel.keyboardKey)
+
+        model.swapGamepads()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+        XCTAssertEqual(runner.input, pro2.key)
+
+        model.swapGamepads()
+
+        XCTAssertEqual(assignments.keysByPlayer[0], pro2.key)
+        XCTAssertEqual(runner.input, EmulatorModel.keyboardKey)
+    }
+
+    func testAGamepadSwapsIntoASecondGameWithNoInput() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: pro2.key]
+        model.refreshGamepads()
+        openSecondGame()
+        XCTAssertTrue(model.canSwapGamepads)
+
+        model.swapGamepads()
+
+        XCTAssertEqual(runner.input, pro2.key)
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+    }
+
+    func testNothingToSwapWhenOnlyTheKeyboardIsInUse() {
+        assignments.keysByPlayer = [0: "0:0:0"]
+        openSecondGame()
+
+        XCTAssertFalse(model.canSwapGamepads)
+        model.swapGamepads()
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+    }
+
+    func testAGamepadThatDisconnectsStaysTheSecondGamesAndAFreeOneJoins() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: "0:0:0"]
+        model.refreshGamepads()
+        openSecondGame()
+        XCTAssertEqual(model.secondGameInput, pro2.key)
+
+        assignments.connected = []
+        model.gamepadsDidChange()
+        XCTAssertEqual(model.secondGameInput, pro2.key)
+        XCTAssertTrue(engine.isRunning())
+
+        assignments.connected = [pro2]
+        model.gamepadsDidChange()
+        XCTAssertEqual(model.secondGameInput, pro2.key)
+        XCTAssertEqual(assignments.keysByPlayer[0], "0:0:0")
+    }
+
+    func testAPlayer1WithoutAGamepadDoesntTakeTheSecondGames() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [:]
+        model.refreshGamepads()
+        openSecondGame()
+        XCTAssertEqual(model.secondGameInput, pro2.key)
+
+        model.assignPlayer1GamepadIfNeeded()
+
+        XCTAssertNil(assignments.keysByPlayer[0])
+    }
+
+    func testOnlyOneGameHasTheSound() {
+        openSecondGame()
+        XCTAssertFalse(engine.muted)
+        XCTAssertTrue(runner.muted)
+
+        model.swapSound()
+        XCTAssertTrue(model.secondGameHasSound)
+        XCTAssertTrue(engine.muted)
+        XCTAssertFalse(runner.muted)
+
+        model.swapSound()
+        XCTAssertFalse(engine.muted)
+        XCTAssertTrue(runner.muted)
+    }
+
+    func testClosingTheSecondGameGivesTheFirstItsSoundBack() {
+        openSecondGame()
+        model.swapSound()
+
+        model.closeSecondGame()
+
+        XCTAssertFalse(engine.muted)
+        XCTAssertFalse(model.secondGameHasSound)
+    }
+
+    func testASecondGameThatEndsGivesBackTheSoundAndItsPad() {
+        assignments.connected = [pro2]
+        assignments.keysByPlayer = [0: "0:0:0"]
+        model.refreshGamepads()
+        openSecondGame()
+        model.swapSound()
+
+        runner.onExit?()
+
+        XCTAssertFalse(engine.muted)
+        XCTAssertNil(model.secondGameInput)
+        XCTAssertFalse(model.hasSecondGame)
+    }
+
+    func testEachButtonReachesTheSecondGameAloneAndTheFirstGameCarriesOn() {
+        openSecondGame()
+
+        model.toggleSecondGamePause()
+        model.saveSecondGameState()
+        model.loadSecondGameState()
+
+        XCTAssertEqual(runner.pauseToggles, 1)
+        XCTAssertEqual(runner.saves, 1)
+        XCTAssertEqual(runner.loads, 1)
+        XCTAssertFalse(engine.isPaused())
+        XCTAssertEqual(engine.saves, 0)
+        XCTAssertEqual(engine.loads, 0)
+    }
+
+    func testTheFirstGamesButtonsLeaveTheSecondGameAlone() {
+        openSecondGame()
+
+        model.togglePause()
+        model.saveState()
+
+        XCTAssertTrue(engine.isPaused())
+        XCTAssertEqual(engine.saves, 1)
+        XCTAssertEqual(runner.pauseToggles, 0)
+        XCTAssertEqual(runner.saves, 0)
+    }
+
+    func testResetOnlyRestartsAPausedSecondGame() {
+        openSecondGame()
+
+        model.resetSecondGame()
+        XCTAssertEqual(runner.resets, 0)
+
+        runner.onPausedChange?(true)
+        XCTAssertTrue(model.isSecondGamePaused)
+
+        model.resetSecondGame()
+        XCTAssertEqual(runner.resets, 1)
+        XCTAssertEqual(engine.resets, 0)
+    }
+}
+
+final class SecondGameInputTests: XCTestCase {
+    func testButtonsAndKeysCrossTheChannel() throws {
+        let window = try XCTUnwrap(S9xFrameChannel.create())
+        let game = try XCTUnwrap(S9xFrameChannel.open(withName: window.name))
+
+        window.setGamepadButton(3, pressed: true)
+        window.setGamepadButton(9, pressed: true)
+        window.setGamepadButton(3, pressed: false)
+        window.setKeyButton(4, player: 1, pressed: true)
+        window.setRawKey(53, pressed: true)
+        window.setRawKey(200, pressed: true)
+
+        // The arrays CopyPressedKeys fills: 8 players by 29 buttons.
+        let buttons = 29
+        var keys = [UInt8](repeating: 0, count: 8 * buttons)
+        var pads = [UInt8](repeating: 0, count: 8 * buttons)
+
+        keys.withUnsafeMutableBytes { keysBytes in
+            pads.withUnsafeMutableBytes { padsBytes in
+                func rows<T>(_ bytes: UnsafeMutableRawBufferPointer) -> UnsafeMutablePointer<T> {
+                    bytes.baseAddress!.assumingMemoryBound(to: T.self)
+                }
+
+                game.addKeys(rows(keysBytes), gamepadButtons: rows(padsBytes))
+            }
+        }
+
+        XCTAssertEqual(pads[9], 1, "the pad drives the game's Player 1")
+        XCTAssertEqual(pads[3], 0, "a released button stops")
+        XCTAssertEqual(keys[buttons + 4], 1, "keys stay with their player")
+        XCTAssertEqual(keys.reduce(0, +) + pads.reduce(0, +), 2)
+
+        var raw = [UInt8](repeating: 0, count: 255)
+        raw.withUnsafeMutableBufferPointer { game.copyRawKeys($0.baseAddress!) }
+        XCTAssertEqual(raw[53], 1)
+        XCTAssertEqual(raw[200], 1)
+        XCTAssertEqual(raw[54], 0)
+
+        window.releaseKeyboard()
+        raw.withUnsafeMutableBufferPointer { game.copyRawKeys($0.baseAddress!) }
+        XCTAssertEqual(raw[53], 0)
+    }
+
+    func testRequestsArriveOnceAndSoundStartsOff() throws {
+        let window = try XCTUnwrap(S9xFrameChannel.create())
+        let game = try XCTUnwrap(S9xFrameChannel.open(withName: window.name))
+
+        XCTAssertTrue(game.isMuted)
+        window.isMuted = false
+        XCTAssertFalse(game.isMuted)
+
+        window.add(.reset)
+        window.add(.saveState)
+        XCTAssertEqual(game.takeRequests(), [.reset, .saveState])
+        XCTAssertEqual(game.takeRequests(), [])
+
+        game.isPaused = true
+        XCTAssertTrue(window.isPaused)
     }
 }

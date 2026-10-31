@@ -35,6 +35,7 @@
 #include <atomic>
 
 #include "mac-prefix.h"
+#include "mac-keyboard.h"
 #include "mac-os.h"
 #include "mac-screenshot.h"
 #include "mac-render.h"
@@ -67,17 +68,26 @@ typedef struct
 @end
 
 S9xFrameChannel				*secondGameChannel = nil;
+bool8						gameMuted = false;
 
 // Two frames, so the window can read one while the game writes the other.
 struct SharedFrames
 {
 	std::atomic<uint32>	sequence;	// Frames published so far; its low bit picks the newest.
+	std::atomic<uint32>	gamepadButtons;					// One bit per S9xButtonCode.
+	std::atomic<uint32>	keyButtons[MAC_MAX_PLAYERS];	// The same, per player.
+	std::atomic<uint32>	rawKeys[MAC_NUM_KEYCODES / 32 + 1];
+	std::atomic<uint32>	requests;						// S9xSecondGameRequest bits.
+	std::atomic<uint32>	soundOn;
+	std::atomic<uint32>	paused;
+	std::atomic<uint32>	choosingSlot;
 	int32				width[2];
 	int32				height[2];
 	uint8				pixels[2][MAX_SNES_WIDTH * MAX_SNES_HEIGHT * 4];
 };
 
 static_assert(ATOMIC_INT_LOCK_FREE == 2, "the two processes can't share a lock");
+static_assert(kNumButtons <= 32, "buttons travel as bits of a 32-bit value");
 
 @implementation S9xFrameChannel
 {
@@ -228,6 +238,124 @@ static_assert(ATOMIC_INT_LOCK_FREE == 2, "the two processes can't share a lock")
 	return NULL;
 }
 
+- (BOOL)isMuted
+{
+	return frames->soundOn.load() == 0;
+}
+
+- (void)setMuted:(BOOL)muted
+{
+	frames->soundOn.store(muted ? 0 : 1);
+}
+
+- (BOOL)isPaused
+{
+	return frames->paused.load() != 0;
+}
+
+- (void)setPaused:(BOOL)paused
+{
+	frames->paused.store(paused ? 1 : 0);
+}
+
+- (BOOL)isChoosingSlot
+{
+	return frames->choosingSlot.load() != 0;
+}
+
+- (void)setChoosingSlot:(BOOL)choosingSlot
+{
+	frames->choosingSlot.store(choosingSlot ? 1 : 0);
+}
+
+static void SetBit(std::atomic<uint32> *bits, int bit, BOOL on)
+{
+	if (on)
+	{
+		bits[bit / 32].fetch_or(1u << (bit % 32));
+	}
+	else
+	{
+		bits[bit / 32].fetch_and(~(1u << (bit % 32)));
+	}
+}
+
+- (void)setGamepadButton:(int)button pressed:(BOOL)pressed
+{
+	if (button >= 0 && button < kNumButtons)
+	{
+		SetBit(&frames->gamepadButtons, button, pressed);
+	}
+}
+
+- (void)setKeyButton:(int)button player:(int)player pressed:(BOOL)pressed
+{
+	if (button >= 0 && button < kNumButtons && player >= 0 && player < MAC_MAX_PLAYERS)
+	{
+		SetBit(&frames->keyButtons[player], button, pressed);
+	}
+}
+
+- (void)setRawKey:(int)keyCode pressed:(BOOL)pressed
+{
+	if (keyCode >= 0 && keyCode < MAC_NUM_KEYCODES)
+	{
+		SetBit(frames->rawKeys, keyCode, pressed);
+	}
+}
+
+- (void)releaseGamepad
+{
+	frames->gamepadButtons.store(0);
+}
+
+- (void)releaseKeyboard
+{
+	for (auto &buttons : frames->keyButtons)
+	{
+		buttons.store(0);
+	}
+
+	for (auto &keys : frames->rawKeys)
+	{
+		keys.store(0);
+	}
+}
+
+- (void)addKeys:(bool8 [MAC_MAX_PLAYERS][kNumButtons])keys gamepadButtons:(bool8 [MAC_MAX_PLAYERS][kNumButtons])gamepadButtons
+{
+	uint32 pad = frames->gamepadButtons.load();
+
+	for (int button = 0; button < kNumButtons; button++)
+	{
+		// The second game has one player, on the window's Player 1 mapping.
+		gamepadButtons[0][button] |= (pad >> button) & 1;
+
+		for (int player = 0; player < MAC_MAX_PLAYERS; player++)
+		{
+			keys[player][button] |= (frames->keyButtons[player].load() >> button) & 1;
+		}
+	}
+}
+
+- (void)copyRawKeys:(bool8 *)rawKeys
+{
+	for (int key = 0; key < MAC_NUM_KEYCODES; key++)
+	{
+		rawKeys[key] = (frames->rawKeys[key / 32].load() >> (key % 32)) & 1;
+	}
+}
+
+- (void)addRequest:(S9xSecondGameRequest)request
+{
+	frames->requests.fetch_or(request);
+}
+
+- (S9xSecondGameRequest)takeRequests
+{
+	return frames->requests.exchange(0);
+}
+
 @end
 
 CAMetalLayer    			*metalLayer = nil;
@@ -375,7 +503,7 @@ void S9xInitDisplay (int argc, char **argv)
 
     S9xInitMetal();
 
-	S9xSetSoundMute(secondGameChannel != nil);
+	S9xSetSoundMute(gameMuted);
     lastFrame = GetMicroseconds();
 }
 

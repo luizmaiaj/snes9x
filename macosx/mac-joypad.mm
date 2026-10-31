@@ -53,6 +53,9 @@ struct ConnectedJoypad {
 
 std::unordered_map<IOHIDDeviceRef, ConnectedJoypad> connectedJoypads;
 
+// All zeros, which no real pad is, when the second game has no gamepad.
+struct JoypadDevice secondGameJoypad = { 0, 0, 0 };
+
 @interface NSData (S9xHexString)
 +(id)s9x_dataWithHexString:(NSString *)hex;
 @end
@@ -124,18 +127,32 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
         return;
     }
 
-    if ( playerNumByDevice.find(deviceStruct) == playerNumByDevice.end())
+    bool forSecondGame = secondGameInput != nil && deviceStruct == secondGameJoypad;
+
+    if (!forSecondGame && playerNumByDevice.find(deviceStruct) == playerNumByDevice.end())
     {
         pthread_mutex_unlock(&keyLock);
         return;
     }
 
-    int8 playerNum = playerNumByDevice[deviceStruct];
+    int8 playerNum = forSecondGame ? 0 : playerNumByDevice[deviceStruct];
     if (playerNum < 0 || playerNum >= MAC_MAX_PLAYERS)
     {
         pthread_mutex_unlock(&keyLock);
         return;
     }
+
+    auto press = [=](S9xButtonCode button, bool pressed)
+    {
+        if (forSecondGame)
+        {
+            [secondGameInput setGamepadButton:button pressed:pressed];
+        }
+        else
+        {
+            pressedGamepadButtons[playerNum][button] = pressed;
+        }
+    };
 
     struct JoypadCookie cookieStruct;
     cookieStruct.device = deviceStruct;
@@ -202,11 +219,11 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
 
             if (buttonCodeByJoypadInput.find(inputStruct) != buttonCodeByJoypadInput.end())
             {
-                pressedGamepadButtons[playerNum][buttonCodeByJoypadInput[inputStruct]] = true;
+                press(buttonCodeByJoypadInput[inputStruct], true);
 
 				if ( buttonCodeByJoypadInput.find(oppositeInputStruct) != buttonCodeByJoypadInput.end() )
 				{
-					pressedGamepadButtons[playerNum][buttonCodeByJoypadInput[oppositeInputStruct]] = false;
+					press(buttonCodeByJoypadInput[oppositeInputStruct], false);
 				}
 
             }
@@ -215,13 +232,13 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
                 oppositeInputStruct.value = info.min;
 				if ( buttonCodeByJoypadInput.find(oppositeInputStruct) != buttonCodeByJoypadInput.end() )
 				{
-					pressedGamepadButtons[playerNum][buttonCodeByJoypadInput[oppositeInputStruct]] = false;
+					press(buttonCodeByJoypadInput[oppositeInputStruct], false);
 				}
                 oppositeInputStruct.value = info.max;
 
 				if ( buttonCodeByJoypadInput.find(oppositeInputStruct) != buttonCodeByJoypadInput.end() )
 				{
-					pressedGamepadButtons[playerNum][buttonCodeByJoypadInput[oppositeInputStruct]] = false;
+					press(buttonCodeByJoypadInput[oppositeInputStruct], false);
 				}
             }
         }
@@ -249,7 +266,7 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
                 auto iterator = buttonCodeByJoypadInput.find(inputStruct);
                 if (iterator != buttonCodeByJoypadInput.end())
                 {
-                    pressedGamepadButtons[playerNum][iterator->second] = false;
+                    press(iterator->second, false);
                 }
             }
 
@@ -266,7 +283,7 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
                 auto firstIterator = buttonCodeByJoypadInput.find(inputStruct);
                 if (firstIterator != buttonCodeByJoypadInput.end())
                 {
-                    pressedGamepadButtons[playerNum][firstIterator->second] = true;
+                    press(firstIterator->second, true);
                 }
 
                 // If directional vector is not parallel to an axis we have an additional direction.
@@ -278,7 +295,7 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
                     auto secondIterator = buttonCodeByJoypadInput.find(inputStruct);
                     if (secondIterator != buttonCodeByJoypadInput.end())
                     {
-                        pressedGamepadButtons[playerNum][secondIterator->second] = true;
+                        press(secondIterator->second, true);
                     }
                 }
             }
@@ -290,7 +307,7 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
 
             if (buttonCodeByJoypadInput.find(inputStruct) != buttonCodeByJoypadInput.end())
             {
-                pressedGamepadButtons[playerNum][buttonCodeByJoypadInput[inputStruct]] = value;
+                press(buttonCodeByJoypadInput[inputStruct], value);
             }
         }
     }
@@ -738,6 +755,11 @@ void JoypadDisconnected (void *inContext, IOReturn inResult, void *inSender, IOH
     namesByDevice.erase(joypad);
 
     // Its buttons would otherwise stay pressed, with no release ever coming.
+    if (joypad == secondGameJoypad)
+    {
+        [secondGameInput releaseGamepad];
+    }
+
     auto player = playerNumByDevice.find(joypad);
     if (player != playerNumByDevice.end() && player->second >= 0 && player->second < MAC_MAX_PLAYERS)
     {
@@ -900,6 +922,16 @@ void ReleaseHID (void)
     {
         IOHIDManagerClose(hidManager, kIOHIDOptionsTypeNone);
     }
+}
+
+void SetSecondGameJoypad(uint32 vendorID, uint32 productID, uint32 index)
+{
+    pthread_mutex_lock(&keyLock);
+    secondGameJoypad.vendorID = vendorID;
+    secondGameJoypad.productID = productID;
+    secondGameJoypad.index = index;
+    [secondGameInput releaseGamepad];
+    pthread_mutex_unlock(&keyLock);
 }
 
 void SetPlayerForJoypad(int8 playerNum, uint32 vendorID, uint32 productID, uint32 index, int8 *oldPlayerNum)

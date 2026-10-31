@@ -173,6 +173,33 @@ void CopyPressedKeys(uint8 keys[MAC_MAX_PLAYERS][kNumButtons], uint8 gamepadButt
 @property (nonatomic, assign) S9xButtonCode buttonCode;
 @end
 
+/// Frames of a second game, passed from the process running it to the window
+/// showing it through shared memory.
+@interface S9xFrameChannel : NSObject
+
+/// What the other process opens the channel by.
+@property (nonatomic, readonly, copy) NSString *name;
+
+/// Makes a new channel, or returns nil when the system refuses.
++ (S9xFrameChannel *)createChannel;
+
+/// Opens a channel another process made, or returns nil when there's no such channel.
++ (S9xFrameChannel *)openChannelWithName:(NSString *)name;
+
+/// Publishes an RGBA frame. Refuses one bigger than the SNES can output.
+- (BOOL)writeFrame:(const void *)rgba width:(int)width height:(int)height;
+
+/// The newest frame, or NULL when there's none since the last call.
+- (CGImageRef)copyNewestImage CF_RETURNS_RETAINED;
+
+@end
+
+/// Set in a process that runs a second game: frames go here, not to the screen.
+extern S9xFrameChannel	*secondGameChannel;
+
+/// The first argument that makes the app run a second game for another process.
+extern NSString * const S9xSecondGameArgument;
+
 /// Why Open MultiCart can't load a file as its first cart.
 typedef NS_ENUM(NSInteger, S9xMultiCartProblem)
 {
@@ -246,6 +273,14 @@ extern id<S9xInputDelegate> inputDelegate;
 /// What stops a file loading as Open MultiCart's first cart, without touching the running game.
 + (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL;
 + (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL biosFolder:(NSURL *)biosFolderURL;
+
+/// Where a second game keeps the save file the first game keeps at `path`, so
+/// the same ROM can run as both games.
++ (NSString *)secondGameSavePath:(NSString *)path;
+
+/// Runs a ROM in this process for a window in another one, muted and without
+/// gamepads, until that process stops it. Returns only if the game can't start.
++ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName;
 
 - (BOOL)loadROM:(NSURL *)fileURL;
 - (BOOL)loadMultiple:(NSArray<NSURL *> *)fileURLs;

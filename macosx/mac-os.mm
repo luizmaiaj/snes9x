@@ -2545,7 +2545,12 @@ static void Initialize (void)
 
 	InitGraphics();
 	InitMacSound();
-	SetUpHID();
+
+	// Every process sees every pad, and the second game's pads aren't chosen yet.
+	if (secondGameChannel == nil)
+	{
+		SetUpHID();
+	}
 
 	autofire = (autofireRec[0].buttonMask || autofireRec[1].buttonMask) ? true : false;
 	for (int a = 0; a < MAC_MAX_PLAYERS; a++)
@@ -3085,6 +3090,8 @@ void QuitWithFatalError ( NSString *message)
 
 @end
 
+NSString * const S9xSecondGameArgument = @"--s9x-second-game";
+
 @implementation S9xEngine
 
 - (instancetype)init
@@ -3341,6 +3348,69 @@ void QuitWithFatalError ( NSString *message)
 + (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL biosFolder:(NSURL *)biosFolderURL
 {
 	return (S9xMultiCartProblem)SNES9X_MultiCartProblem(cartURL, biosFolderURL);
+}
+
++ (NSString *)secondGameSavePath:(NSString *)path
+{
+	NSString *folder = [path.stringByDeletingLastPathComponent stringByAppendingPathComponent:@"Second Game"];
+
+	[NSFileManager.defaultManager createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:NULL];
+
+	return [folder stringByAppendingPathComponent:path.lastPathComponent];
+}
+
++ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName
+{
+	[NSApplication sharedApplication];
+
+	// Before anything shows in the Dock: this process has no window of its own.
+	NSApp.activationPolicy = NSApplicationActivationPolicyProhibited;
+
+	secondGameChannel = [S9xFrameChannel openChannelWithName:channelName];
+
+	if (secondGameChannel == nil)
+	{
+		return 1;
+	}
+
+	static S9xEngine *engine = [S9xEngine new];
+
+	if (![engine loadROM:fileURL])
+	{
+		return 1;
+	}
+
+	// With no window of its own, App Nap would slow the game down.
+	static id<NSObject> activity = [NSProcessInfo.processInfo beginActivityWithOptions:NSActivityUserInitiated | NSActivityLatencyCritical reason:@"Running the second game"];
+	(void) activity;
+
+	// Saves the game either way: asked to stop, or left behind by a crash.
+	dispatch_queue_t queue = dispatch_queue_create("com.snes9x.secondgame", DISPATCH_QUEUE_SERIAL);
+	void (^finish)(void) = ^
+	{
+		[engine stop];
+		exit(0);
+	};
+
+	signal(SIGTERM, SIG_IGN);
+
+	static dispatch_source_t terminated = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGTERM, 0, queue);
+	dispatch_source_set_event_handler(terminated, finish);
+	dispatch_resume(terminated);
+
+	static dispatch_source_t orphaned = dispatch_source_create(DISPATCH_SOURCE_TYPE_PROC, getppid(), DISPATCH_PROC_EXIT, queue);
+	dispatch_source_set_event_handler(orphaned, finish);
+	dispatch_resume(orphaned);
+
+	// launchd adopts a process whose parent went before the source above started.
+	if (getppid() == 1)
+	{
+		dispatch_async(queue, finish);
+	}
+
+	[NSApp run];
+
+	return 0;
 }
 
 - (BOOL)loadROM:(NSURL *)fileURL

@@ -6,6 +6,7 @@
 
 import AppKit
 import XCTest
+import snes9x_framework
 
 /// Takes keyboard focus, like S9xView.
 final class FakeGameView: NSView {
@@ -46,6 +47,22 @@ final class FakeEngine: NSObject, GameEngine, @unchecked Sendable {
 
     func saveState() { saves += 1 }
     func loadState() { loads += 1 }
+}
+
+/// Stands in for the process that runs a second game.
+final class FakeSecondGameRunner: SecondGameRunner {
+    var view: NSView? = NSView(frame: NSRect(x: 0, y: 0, width: 512, height: 478))
+    private(set) var started: [URL] = []
+    private(set) var stops = 0
+    private(set) var onExit: (@MainActor () -> Void)?
+
+    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView? {
+        started.append(url)
+        self.onExit = onExit
+        return view
+    }
+
+    func stop() { stops += 1 }
 }
 
 /// Stands in for the app delegate's player assignments in the preferences.
@@ -454,6 +471,199 @@ final class EmulatorModelTests: XCTestCase {
 }
 
 @MainActor
+final class SecondGameModelTests: XCTestCase {
+    private let rom = URL(fileURLWithPath: "/roms/second.sfc")
+
+    private func makeModel(running: Bool = true) -> (EmulatorModel, FakeEngine, FakeSecondGameRunner) {
+        let engine = FakeEngine()
+        engine.running = running
+        let model = EmulatorModel(engine: engine)
+        let runner = FakeSecondGameRunner()
+        model.secondGameRunner = runner
+        model.chooseROM = { [rom] in rom }
+        model.refreshEmulationState()
+        return (model, engine, runner)
+    }
+
+    func testOpeningASecondGameShowsItAndLeavesTheFirstRunning() {
+        let (model, engine, runner) = makeModel()
+
+        model.openSecondROM()
+
+        XCTAssertEqual(runner.started, [rom])
+        XCTAssertIdentical(model.secondGameView, runner.view)
+        XCTAssertTrue(model.hasSecondGame)
+        XCTAssertTrue(engine.isRunning())
+        XCTAssertFalse(engine.isPaused())
+        XCTAssertEqual(engine.viewsMade, 0, "the first game's view must not be rebuilt")
+    }
+
+    func testASecondGameNeedsAFirstGame() {
+        let (model, _, runner) = makeModel(running: false)
+
+        model.openSecondROM()
+
+        XCTAssertTrue(runner.started.isEmpty)
+        XCTAssertNil(model.secondGameView)
+    }
+
+    func testThereIsOnlyOneSecondGame() {
+        let (model, _, runner) = makeModel()
+
+        model.openSecondROM()
+        model.openSecondROM()
+
+        XCTAssertEqual(runner.started.count, 1)
+    }
+
+    func testCancellingTheOpenPanelStartsNothing() {
+        let (model, _, runner) = makeModel()
+        model.chooseROM = { nil }
+
+        model.openSecondROM()
+
+        XCTAssertTrue(runner.started.isEmpty)
+    }
+
+    func testAFileThatCantStartIsReportedAndShowsNothing() {
+        let (model, _, runner) = makeModel()
+        runner.view = nil
+        var refused: [URL] = []
+        model.cantOpenHandler = { refused.append($0) }
+
+        model.openSecondROM()
+
+        XCTAssertEqual(refused, [rom])
+        XCTAssertFalse(model.hasSecondGame)
+    }
+
+    func testClosingStopsTheSecondGameAndKeepsTheFirst() {
+        let (model, engine, runner) = makeModel()
+        model.openSecondROM()
+
+        model.closeSecondGame()
+
+        XCTAssertEqual(runner.stops, 1)
+        XCTAssertNil(model.secondGameView)
+        XCTAssertTrue(engine.isRunning())
+    }
+
+    func testClosingWithNoSecondGameDoesNothing() {
+        let (model, _, runner) = makeModel()
+
+        model.closeSecondGame()
+
+        XCTAssertEqual(runner.stops, 0)
+    }
+
+    func testASecondGameThatEndsOnItsOwnLeavesTheView() throws {
+        let (model, _, runner) = makeModel()
+        model.openSecondROM()
+
+        try XCTUnwrap(runner.onExit)()
+
+        XCTAssertNil(model.secondGameView)
+    }
+}
+
+final class FrameChannelTests: XCTestCase {
+    private func pixels(_ value: UInt8, width: Int, height: Int) -> [UInt8] {
+        [UInt8](repeating: value, count: width * height * 4)
+    }
+
+    private func channels() throws -> (writer: S9xFrameChannel, reader: S9xFrameChannel) {
+        let reader = try XCTUnwrap(S9xFrameChannel.create())
+        let writer = try XCTUnwrap(S9xFrameChannel.open(withName: reader.name))
+        return (writer, reader)
+    }
+
+    func testAFrameReachesTheOtherEnd() throws {
+        let (writer, reader) = try channels()
+
+        XCTAssertTrue(writer.writeFrame(pixels(200, width: 256, height: 224), width: 256, height: 224))
+
+        let image = try XCTUnwrap(reader.copyNewestImage())
+        XCTAssertEqual(image.width, 256)
+        XCTAssertEqual(image.height, 224)
+        let bytes = try XCTUnwrap(image.dataProvider?.data as Data?)
+        XCTAssertEqual(bytes[0], 200)
+        XCTAssertEqual(bytes[256 * 224 * 4 - 1], 200)
+    }
+
+    func testNoFrameYetGivesNothing() throws {
+        XCTAssertNil(try channels().reader.copyNewestImage())
+    }
+
+    func testAFrameIsReadOnce() throws {
+        let (writer, reader) = try channels()
+        writer.writeFrame(pixels(1, width: 2, height: 2), width: 2, height: 2)
+
+        XCTAssertNotNil(reader.copyNewestImage())
+        XCTAssertNil(reader.copyNewestImage())
+    }
+
+    func testTheNewestFrameWins() throws {
+        let (writer, reader) = try channels()
+        for value: UInt8 in [10, 20, 30] {
+            writer.writeFrame(pixels(value, width: 2, height: 2), width: 2, height: 2)
+        }
+
+        let image = try XCTUnwrap(reader.copyNewestImage())
+        let bytes = try XCTUnwrap(image.dataProvider?.data as Data?)
+        XCTAssertEqual(bytes[0], 30)
+    }
+
+    func testTheLargestSNESFrameFitsAndALargerOneIsRefused() throws {
+        let (writer, reader) = try channels()
+
+        XCTAssertTrue(writer.writeFrame(pixels(1, width: 512, height: 478), width: 512, height: 478))
+        XCTAssertFalse(writer.writeFrame(pixels(2, width: 513, height: 478), width: 513, height: 478))
+        XCTAssertFalse(writer.writeFrame(pixels(2, width: 512, height: 479), width: 512, height: 479))
+        XCTAssertFalse(writer.writeFrame(pixels(2, width: 2, height: 2), width: 0, height: 2))
+        XCTAssertEqual(reader.copyNewestImage()?.width, 512)
+    }
+
+    func testAChannelThatDoesNotExistCantBeOpened() {
+        XCTAssertNil(S9xFrameChannel.open(withName: "/s9x-no-such-channel"))
+    }
+
+    func testEachNewChannelHasItsOwnNameThatFitsTheSystemLimit() throws {
+        let first = try XCTUnwrap(S9xFrameChannel.create())
+        let second = try XCTUnwrap(S9xFrameChannel.create())
+
+        XCTAssertNotEqual(first.name, second.name)
+        XCTAssertLessThanOrEqual(first.name.utf8.count, 31)
+    }
+
+    func testTheNameIsGoneWithTheChannel() throws {
+        var channel: S9xFrameChannel? = try XCTUnwrap(S9xFrameChannel.create())
+        let name = try XCTUnwrap(channel?.name)
+
+        channel = nil
+
+        XCTAssertNil(S9xFrameChannel.open(withName: name))
+    }
+}
+
+final class SecondGameSaveTests: XCTestCase {
+    func testASecondGameSavesBesideTheFirstInItsOwnFolder() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        let first = folder.appendingPathComponent("Super Mario World (USA).srm").path
+        let second: String = try XCTUnwrap(S9xEngine.secondGameSavePath(first))
+
+        XCTAssertNotEqual(second, first)
+        XCTAssertEqual(second, folder.appendingPathComponent("Second Game/Super Mario World (USA).srm").path)
+
+        var isFolder: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: (second as NSString).deletingLastPathComponent, isDirectory: &isFolder))
+        XCTAssertTrue(isFolder.boolValue)
+    }
+}
+
+@MainActor
 final class GameWindowTests: XCTestCase {
     private func makeWindow() -> NSWindow {
         NSWindow(contentRect: NSRect(x: 0, y: 0, width: 512, height: 478),
@@ -473,6 +683,91 @@ final class GameWindowTests: XCTestCase {
         XCTAssertEqual(container.subviews, [new])
         XCTAssertNil(old.superview)
         XCTAssertEqual(container.minimumSize, NSSize(width: 512, height: 478))
+    }
+
+    func testTwoGamesShareTheContainerInEqualHalves() {
+        let engine = FakeEngine()
+        let container = GameContainerView(frame: NSRect(x: 0, y: 0, width: 1072, height: 544))
+        let first = engine.makeGameView()
+        let second = NSView()
+
+        container.show(first)
+        container.showSecondGame(second)
+        container.layout()
+
+        XCTAssertEqual(first.frame, NSRect(x: 0, y: 0, width: 536, height: 544))
+        XCTAssertEqual(second.frame, NSRect(x: 536, y: 0, width: 536, height: 544))
+    }
+
+    func testEachOfTwoGamesLooksLikeOneGameAlone() {
+        let engine = FakeEngine()
+        let alone = GameContainerView(frame: NSRect(x: 0, y: 0, width: 536, height: 544))
+        let one = engine.makeGameView()
+        alone.show(one)
+        alone.layout()
+
+        let shared = GameContainerView(frame: NSRect(x: 0, y: 0, width: 1072, height: 544))
+        let first = engine.makeGameView()
+        shared.show(first)
+        shared.showSecondGame(NSView())
+        shared.layout()
+
+        XCTAssertEqual(first.frame, one.frame)
+    }
+
+    func testTheWindowDoublesForASecondGameAndGoesBackAfter() {
+        let window = makeWindow()
+        window.setFrame(NSRect(x: 40, y: 40, width: 536, height: 544), display: false)
+        let engine = FakeEngine()
+        let container = GameContainerView(frame: NSRect(x: 0, y: 0, width: 536, height: 544))
+        container.autoresizingMask = [.width, .height]
+        window.contentView = container
+        container.show(engine.makeGameView())
+        let before = window.frame
+
+        container.showSecondGame(NSView())
+
+        XCTAssertEqual(window.frame.width, min(before.width * 2, window.screen?.visibleFrame.width ?? 1072))
+        XCTAssertEqual(window.frame.height, before.height)
+
+        container.showSecondGame(nil)
+
+        XCTAssertEqual(window.frame, before)
+        XCTAssertEqual(container.subviews.count, 1)
+    }
+
+    func testANarrowSavedWindowGrowsInProportionFromTheTopLeft() {
+        let window = makeWindow()
+        window.setFrame(NSRect(x: 100, y: 100, width: 512, height: 520), display: false)
+
+        GameWindowHosting.applyMinimumWidth(to: window)
+
+        XCTAssertEqual(window.frame.width, 536)
+        XCTAssertEqual(window.frame.height, 520.0 * 536.0 / 512.0, accuracy: 1)
+        XCTAssertEqual(window.frame.minX, 100)
+        XCTAssertEqual(window.frame.maxY, 620, accuracy: 1)
+        XCTAssertEqual(window.minSize.width, 536)
+    }
+
+    func testAWideEnoughSavedWindowIsLeftAlone() {
+        let window = makeWindow()
+        let frame = NSRect(x: 100, y: 100, width: 800, height: 700)
+        window.setFrame(frame, display: false)
+
+        GameWindowHosting.applyMinimumWidth(to: window)
+
+        XCTAssertEqual(window.frame, frame)
+    }
+
+    func testTheSecondROMButtonSitsAfterOpenROMWithATooltip() throws {
+        let window = makeWindow()
+        GameWindowHosting.install(in: window, model: EmulatorModel(engine: FakeEngine()))
+
+        let item = try XCTUnwrap(toolbarItem(labelled: "Open Second ROM", in: window), "items: \(toolbarLabels(in: window))")
+        let labels = toolbarLabels(in: window)
+
+        XCTAssertEqual(labels.firstIndex(of: "Open Second ROM"), try XCTUnwrap(labels.firstIndex(of: "Open ROM")) + 1)
+        XCTAssertEqual(item.toolTip, "Open a ROM beside the running game. It runs muted, with no gamepad yet.")
     }
 
     func testGameFillsTheHeightCentredWithTheSNESAspectRatio() {

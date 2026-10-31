@@ -1,19 +1,21 @@
 # Next steps — snes9x (luizmaiaj fork)
-_Last updated: 2026-10-30 by github-issue-fix_
+_Last updated: 2026-10-31 by github-issue-fix_
 
 ## Queue (do next, roughly in order)
 - [ ] Luiz checks #17 in the installed build: click Save State and Load State, pick a slot with the arrow keys and Return, then Esc to cancel; Claudio could not click toolbar buttons
 - [ ] Luiz checks #13 in the installed build: open a non-ROM file, press OK, and the game carries on
-- [ ] #2 — Luiz closes it by hand once #17 closes with the next release (umbrella, GitHub won't close it on its own)
-- [ ] Luiz checks #16 in the installed build: File → Open MultiCart with a non-ROM file shows the error, and the game carries on; then closes #16 by hand. Claudio could not see the alert, and real Sufami Turbo files are still untested
-- [ ] #18 — Two games side by side in one window, with a gamepad each and swappable sound and gamepads (large: the core runs one game per process, so the approach needs agreeing first)
+- [ ] Luiz checks #18's prototype in the installed build: Open Second ROM beside Open ROM, then File → Close Second Game. The open panel and both buttons were never clicked; Claudio drove them from the debugger
+- [ ] #18 — Gamepads per game, swap gamepads, move the sound, and which game Pause, Reset and the save buttons act on. Still open: keyboard and full screen
+- [ ] #20 — Count the 8BitDo's buttons, then let them trigger any game or app command (needs the pad connected; settle how it fits #18 first)
 
 ## Blocked / waiting
 - [ ] Input Monitoring — the fork's builds are signed with Luiz's Developer ID, so macOS treats them as a new app; Snes9x may need adding again in Privacy & Security → Input Monitoring for gamepads
 
 ## Recently done
-- #16 — Open MultiCart checks the first file before stopping the game (2026-10-30)
-- #17 — Save State and Load State toolbar buttons (2026-10-30)
+- #18 prototype — Two games side by side, one process each, 60 fps; second game muted with no gamepad (2026-10-31, not released)
+- #2 — Umbrella closed by hand, all 8 sub-issues done (2026-10-31)
+- #16 — Open MultiCart checks the first file before stopping the game (2026-10-30, released in v26.10.31.7; closed 2026-10-31 without checking the alert or real Sufami Turbo files)
+- #17 — Save State and Load State toolbar buttons (2026-10-30, released in v26.10.31.7)
 - #13 — Non-ROM files are refused before the game stops (2026-10-30, merged in PR #15)
 - #11 — Keyboard choice for Player 1 holds (2026-10-30, released in v26.10.30.5)
 - #7 — Gamepads connecting and disconnecting after launch (2026-10-30, released in v26.10.30.4)

@@ -145,6 +145,83 @@ final class ROMFileTests: XCTestCase {
         XCTAssertTrue(S9xEngine.looksLikeROM(try zip([file], as: "GAME.ZIP")))
     }
 
+    // MARK: - MultiCart
+
+    /// A Sufami Turbo cart image with `extra` copier-header bytes in front.
+    private func makeSufamiCart(size: Int = 0x80000, extra: Int = 0) -> Data {
+        var cart = Data(repeating: 0, count: size)
+        cart.replaceSubrange(0..<14, with: Data("BANDAI SFC-ADX".utf8))
+        return Data(count: extra) + cart
+    }
+
+    private func makeSufamiBIOS() -> Data {
+        var bios = Data(repeating: 0, count: 0x40000)
+        bios.replaceSubrange(0..<14, with: Data("BANDAI SFC-ADX".utf8))
+        bios.replaceSubrange(0x10..<0x1E, with: Data("SFC-ADX BACKUP".utf8))
+        return bios
+    }
+
+    private func problem(with cart: URL) -> S9xMultiCartProblem {
+        S9xEngine.problem(withMultiCart: cart, biosFolder: folder)
+    }
+
+    func testATextFileIsNotAMultiCart() throws {
+        let text = Data(repeating: UInt8(ascii: "a"), count: 0x80000)
+        XCTAssertEqual(problem(with: try write(text, as: "notes.txt")), .notACart)
+    }
+
+    func testAnEmptyFileIsNotAMultiCart() throws {
+        XCTAssertEqual(problem(with: try write(Data(), as: "empty.st")), .notACart)
+    }
+
+    func testAMissingFileIsNotAMultiCart() {
+        XCTAssertEqual(problem(with: folder.appendingPathComponent("missing.st")), .notACart)
+    }
+
+    func testAnOrdinaryROMIsNotAMultiCart() throws {
+        let rom = makeROM(size: 0x80000, headerAt: 0x7FC0, mapMode: 0x20)
+        XCTAssertEqual(problem(with: try write(rom, as: "game.sfc")), .notACart)
+    }
+
+    func testASufamiCartWithoutTheBIOSReportsTheBIOS() throws {
+        XCTAssertEqual(problem(with: try write(makeSufamiCart(), as: "cart.st")), .noBIOS)
+    }
+
+    func testASufamiCartLoadsWithTheBIOS() throws {
+        _ = try write(makeSufamiBIOS(), as: "STBIOS.bin")
+        XCTAssertEqual(problem(with: try write(makeSufamiCart(), as: "cart.st")), .none)
+    }
+
+    func testAWrongFileNamedLikeTheBIOSDoesNotCount() throws {
+        _ = try write(noise(size: 0x40000), as: "STBIOS.bin")
+        XCTAssertEqual(problem(with: try write(makeSufamiCart(), as: "cart.st")), .noBIOS)
+    }
+
+    func testASufamiCartWithACopierHeaderLoads() throws {
+        _ = try write(makeSufamiBIOS(), as: "STBIOS.bin")
+        XCTAssertEqual(problem(with: try write(makeSufamiCart(extra: 512), as: "cart.st")), .none)
+    }
+
+    func testAZippedSufamiCartLoads() throws {
+        _ = try write(makeSufamiBIOS(), as: "STBIOS.bin")
+        let cart = try write(makeSufamiCart(), as: "cart.st")
+        XCTAssertEqual(problem(with: try zip([cart], as: "cart.zip")), .none)
+    }
+
+    func testTheBIOSItselfIsNotACart() throws {
+        _ = try write(makeSufamiBIOS(), as: "STBIOS.bin")
+        let bios = makeSufamiBIOS() + Data(count: 0x40000)
+        XCTAssertEqual(problem(with: try write(bios, as: "bios.st")), .notACart)
+    }
+
+    func testABSXCartLoadsWithoutABIOS() throws {
+        var cart = Data(repeating: 0, count: 0x100000)
+        cart[0x7FB2] = 0x5A
+        cart[0x7FB5] = 0x41
+        cart[0x7FDA] = 0x33
+        XCTAssertEqual(problem(with: try write(cart, as: "memorypack.bs")), .none)
+    }
+
     func testAGzippedROMIsAROM() throws {
         let file = try write(makeROM(size: 0x80000, headerAt: 0x7FC0, mapMode: 0x20), as: "game.sfc")
         let gzip = Process()

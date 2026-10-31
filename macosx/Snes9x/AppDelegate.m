@@ -555,11 +555,16 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
         return YES;
     }
 
+    [self showCantOpen:url because:NSLocalizedString(@"It isn't a Super Nintendo ROM.", @"")];
+    return NO;
+}
+
+- (void)showCantOpen:(NSURL *)url because:(NSString *)reason
+{
     NSAlert *alert = [NSAlert new];
     alert.messageText = [NSString stringWithFormat:NSLocalizedString(@"“%@” can't be opened.", @""), url.lastPathComponent];
-    alert.informativeText = NSLocalizedString(@"It isn't a Super Nintendo ROM.", @"");
+    alert.informativeText = reason;
     [alert runModal];
-    return NO;
 }
 
 - (IBAction)openMultiple:(id)sender
@@ -584,6 +589,17 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     {
         [self resetWindow];
         return YES;
+    }
+
+    NSURL *url = urls.firstObject;
+
+    if ([S9xEngine problemWithMultiCart:url] == S9xMultiCartProblemNoBIOS)
+    {
+        [self showCantOpen:url because:NSLocalizedString(@"This Sufami Turbo game needs the BIOS file STBIOS.bin, which wasn't found.", @"")];
+    }
+    else
+    {
+        [self showCantOpen:url because:NSLocalizedString(@"It isn't a Super Nintendo ROM.", @"")];
     }
 
     return NO;

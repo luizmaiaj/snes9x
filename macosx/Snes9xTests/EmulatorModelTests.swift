@@ -17,6 +17,8 @@ final class FakeGameView: NSView {
 final class FakeEngine: NSObject, GameEngine, @unchecked Sendable {
     private(set) var viewsMade = 0
     private(set) var resets = 0
+    private(set) var saves = 0
+    private(set) var loads = 0
     var running = false
     var paused = false
 
@@ -41,6 +43,9 @@ final class FakeEngine: NSObject, GameEngine, @unchecked Sendable {
         resets += 1
         paused = false
     }
+
+    func saveState() { saves += 1 }
+    func loadState() { loads += 1 }
 }
 
 /// Stands in for the app delegate's player assignments in the preferences.
@@ -159,6 +164,47 @@ final class EmulatorModelTests: XCTestCase {
         model.reset()
         XCTAssertEqual(engine.resets, 1)
         XCTAssertFalse(model.isPaused)
+    }
+
+    func testSaveAndLoadStateReachTheEngineWhileAGameRuns() {
+        let engine = FakeEngine()
+        let model = EmulatorModel(engine: engine)
+        engine.running = true
+        model.reloadGameView()
+
+        model.saveState()
+        XCTAssertEqual(engine.saves, 1)
+        XCTAssertEqual(engine.loads, 0)
+
+        model.loadState()
+        XCTAssertEqual(engine.saves, 1)
+        XCTAssertEqual(engine.loads, 1)
+    }
+
+    func testSaveAndLoadStateWorkWhileAGameIsPaused() {
+        let engine = FakeEngine()
+        let model = EmulatorModel(engine: engine)
+        engine.running = true
+        model.reloadGameView()
+        model.togglePause()
+
+        model.saveState()
+        model.loadState()
+
+        XCTAssertEqual(engine.saves, 1)
+        XCTAssertEqual(engine.loads, 1)
+    }
+
+    func testSaveAndLoadStateDoNothingWithoutAGame() {
+        let engine = FakeEngine()
+        let model = EmulatorModel(engine: engine)
+        model.reloadGameView()
+
+        model.saveState()
+        model.loadState()
+
+        XCTAssertEqual(engine.saves, 0)
+        XCTAssertEqual(engine.loads, 0)
     }
 
     func testAPauseFromTheEmulationThreadReachesTheModel() {

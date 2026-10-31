@@ -136,6 +136,22 @@ struct GameWindowContent: View {
                     .help("Restart the game, like the console's reset button. Pause the game first.")
                     .disabled(!model.isPaused)
 
+                    Button {
+                        model.saveState()
+                    } label: {
+                        Label("Save State", systemImage: "tray.and.arrow.down")
+                    }
+                    .help("Save the game to a slot. Pick one with the arrow keys and Return, or press Esc to cancel.")
+                    .disabled(!model.isRunning)
+
+                    Button {
+                        model.loadState()
+                    } label: {
+                        Label("Load State", systemImage: "tray.and.arrow.up")
+                    }
+                    .help("Load a saved game from a slot. Pick one with the arrow keys and Return, or press Esc to cancel.")
+                    .disabled(!model.isRunning)
+
                     Menu {
                         Picker("Player 1", selection: player1Selection) {
                             Text("Keyboard").tag(String?.none)

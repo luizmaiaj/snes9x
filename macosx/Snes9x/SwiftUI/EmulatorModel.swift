@@ -24,6 +24,12 @@ public protocol GameEngine: NSObjectProtocol {
 
     /// Restarts the game like the console's reset button, and resumes it.
     func softwareReset()
+
+    /// Opens the slot picker to save the game, like the Freeze key.
+    func saveState()
+
+    /// Opens the slot picker to load a saved game, like the Defrost key.
+    func loadState()
 }
 
 /// A connected gamepad, identified by the key Snes9x saves its settings under.
@@ -162,6 +168,26 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
         engine.softwareReset()
         refreshEmulationState()
+    }
+
+    // MARK: - Save states
+
+    /// Saves the game to a slot the player picks.
+    func saveState() {
+        guard engine.isRunning() else {
+            return
+        }
+
+        engine.saveState()
+    }
+
+    /// Loads a slot the player picks.
+    func loadState() {
+        guard engine.isRunning() else {
+            return
+        }
+
+        engine.loadState()
     }
 
     /// Reads whether a game is running or paused back from the engine.

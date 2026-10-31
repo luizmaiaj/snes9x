@@ -119,6 +119,65 @@ bool8 SNES9X_LooksLikeROM (NSURL *fileURL)
 	return (FALSE);
 }
 
+// The core's is_BSCart_BIOS, which can't run here: it sets Memory.LoROM and HiROM,
+// and the running game still needs them.
+static bool IsBSCart (const uint8 *data, uint32 size)
+{
+	return ((size > 0x7fda && data[0x7fb2] == 0x5a && data[0x7fb5] != 0x20 && data[0x7fda] == 0x33) ||
+			(size > 0xffda && data[0xffb2] == 0x5a && data[0xffb5] != 0x20 && data[0xffda] == 0x33));
+}
+
+static bool IsSufamiTurboCart (const uint8 *data, uint32 size)
+{
+	return (size >= 0x80000 && size <= 0x100000 &&
+			strncmp((const char *) data, "BANDAI SFC-ADX", 14) == 0 &&
+			strncmp((const char *) (data + 0x10), "SFC-ADX BACKUP", 14) != 0);
+}
+
+static bool HasSufamiTurboBIOS (NSURL *biosFolderURL)
+{
+	NSData		*bios = [NSData dataWithContentsOfURL:[biosFolderURL URLByAppendingPathComponent:@"STBIOS.bin"]];
+	const char	*data = (const char *) bios.bytes;
+
+	return (bios.length >= 0x40000 &&
+			strncmp(data, "BANDAI SFC-ADX", 14) == 0 &&
+			strncmp(data + 0x10, "SFC-ADX BACKUP", 14) == 0);
+}
+
+NSURL * SNES9X_BIOSFolder (NSURL *cartURL)
+{
+	// Beside the ROM, the core's folder follows Memory.ROMFilename: that names
+	// the cart once it loads, but still the running game here.
+	if (saveInROMFolder == 1)
+		return (cartURL.URLByDeletingLastPathComponent);
+
+	return ([NSURL fileURLWithPath:@(S9xGetDirectory(BIOS_DIR).c_str()) isDirectory:YES]);
+}
+
+// The first cart decides, as in CMemory::LoadMultiCartInt: the core drops a
+// second cart it can't use.
+NSInteger SNES9X_MultiCartProblem (NSURL *cartURL, NSURL *biosFolderURL)
+{
+	const uint32	copierHeaderSize = 0x200;
+	const uint32	bufferSize = CMemory::MAX_ROM_SIZE + copierHeaderSize;
+
+	std::vector<uint8>	buffer(bufferSize);
+	uint32				size = ReadROMFile(cartURL, buffer.data(), bufferSize);
+	const uint8			*data = buffer.data();
+
+	if ((size % 0x2000 == copierHeaderSize && headerDetect != kNoHeaderForce) ||
+		(size >= copierHeaderSize && headerDetect == kHeaderForce))
+	{
+		data += copierHeaderSize;
+		size -= copierHeaderSize;
+	}
+
+	if (IsSufamiTurboCart(data, size))
+		return (HasSufamiTurboBIOS(biosFolderURL) ? S9xMultiCartProblemNone : S9xMultiCartProblemNoBIOS);
+
+	return (IsBSCart(data, size) ? S9xMultiCartProblemNone : S9xMultiCartProblemNotACart);
+}
+
 bool8 SNES9X_OpenCart (NSURL *inRef)
 {
 	NSURL		*cartRef;

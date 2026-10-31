@@ -173,6 +173,14 @@ void CopyPressedKeys(uint8 keys[MAC_MAX_PLAYERS][kNumButtons], uint8 gamepadButt
 @property (nonatomic, assign) S9xButtonCode buttonCode;
 @end
 
+/// Why Open MultiCart can't load a file as its first cart.
+typedef NS_ENUM(NSInteger, S9xMultiCartProblem)
+{
+	S9xMultiCartProblemNone,
+	S9xMultiCartProblemNotACart,
+	S9xMultiCartProblemNoBIOS
+};
+
 typedef NS_ENUM(uint32_t, S9xWatchPointFormat)
 {
 	S9xWatchPointFormatUnsigned = 1,
@@ -210,6 +218,10 @@ extern id<S9xInputDelegate> inputDelegate;
 - (void)softwareReset;
 - (void)hardwareReset;
 
+// Open the slot picker on the emulation thread, like the Freeze and Defrost keys.
+- (void)saveState;
+- (void)loadState;
+
 - (BOOL)isRunning;
 - (BOOL)isPaused;
 - (void)pause;
@@ -230,6 +242,10 @@ extern id<S9xInputDelegate> inputDelegate;
 
 /// Whether a file holds a Super Nintendo ROM, without touching the running game.
 + (BOOL)looksLikeROM:(NSURL *)fileURL;
+
+/// What stops a file loading as Open MultiCart's first cart, without touching the running game.
++ (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL;
++ (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL biosFolder:(NSURL *)biosFolderURL;
 
 - (BOOL)loadROM:(NSURL *)fileURL;
 - (BOOL)loadMultiple:(NSArray<NSURL *> *)fileURLs;

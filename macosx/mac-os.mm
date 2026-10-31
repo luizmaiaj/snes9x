@@ -281,7 +281,9 @@ struct GameViewInfo
 	int		height;
 };
 
-static volatile bool8	rejectinput     = false;
+static volatile bool8	rejectinput     = false,
+						saveStateRequested = false,
+						loadStateRequested = false;
 
 static bool8			pauseEmulation  = false,
 						escKeyDown      = false,
@@ -2053,7 +2055,14 @@ int PromptFreezeDefrost (Boolean freezing)
 
     inactiveMode = oldInactiveMode;
     frzselecting = false;
+
+	bool8	wasPaused = pauseEmulation;
 	pauseEmulation = false;
+
+	if (wasPaused)
+	{
+		[s9xView.emulationDelegate emulationResumed];
+	}
 
 	[s9xView updatePauseOverlay];
 
@@ -2096,6 +2105,17 @@ static void ProcessInput (void)
 
     if (rejectinput)
         return;
+
+    if (saveStateRequested || loadStateRequested)
+    {
+        bool8   saving = saveStateRequested;
+
+        saveStateRequested = loadStateRequested = false;
+
+        MacStopSound();
+        isok = saving ? SNES9X_Freeze() : SNES9X_Defrost();
+        return;
+    }
 
     CopyPressedKeys(keys, gamepadButtons);
 
@@ -3151,6 +3171,22 @@ void QuitWithFatalError ( NSString *message)
 	[self resume];
 }
 
+- (void)saveState
+{
+	if (running && !frzselecting)
+	{
+		saveStateRequested = true;
+	}
+}
+
+- (void)loadState
+{
+	if (running && !frzselecting)
+	{
+		loadStateRequested = true;
+	}
+}
+
 - (BOOL)isRunning
 {
     return running;
@@ -3297,6 +3333,16 @@ void QuitWithFatalError ( NSString *message)
 	return SNES9X_LooksLikeROM(fileURL);
 }
 
++ (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL
+{
+	return [self problemWithMultiCart:cartURL biosFolder:SNES9X_BIOSFolder(cartURL)];
+}
+
++ (S9xMultiCartProblem)problemWithMultiCart:(NSURL *)cartURL biosFolder:(NSURL *)biosFolderURL
+{
+	return (S9xMultiCartProblem)SNES9X_MultiCartProblem(cartURL, biosFolderURL);
+}
+
 - (BOOL)loadROM:(NSURL *)fileURL
 {
 	// Stopping the game can't be undone, so look at the file first.
@@ -3336,6 +3382,12 @@ void QuitWithFatalError ( NSString *message)
 - (BOOL)loadMultiple:(NSArray<NSURL *> *)fileURLs
 {
 	if (fileURLs.count == 0)
+	{
+		return NO;
+	}
+
+	// Stopping the game can't be undone, so look at the file first.
+	if ([S9xEngine problemWithMultiCart:fileURLs.firstObject] != S9xMultiCartProblemNone)
 	{
 		return NO;
 	}

@@ -60,6 +60,8 @@ void SNES9X_SoftReset (void);
 void SNES9X_Quit (void);
 void SNES9X_InitSound (void);
 bool8 SNES9X_LooksLikeROM (NSURL *);
+NSURL * SNES9X_BIOSFolder (NSURL *cartURL);
+NSInteger SNES9X_MultiCartProblem (NSURL *cartURL, NSURL *biosFolderURL);
 bool8 SNES9X_OpenCart (NSURL *);
 bool8 SNES9X_OpenMultiCart (NSURL *cart1FileURL, NSURL *cart2FileURL);
 bool8 SNES9X_Freeze (void);

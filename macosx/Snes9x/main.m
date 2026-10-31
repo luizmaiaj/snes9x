@@ -20,12 +20,17 @@
 
 #import <Cocoa/Cocoa.h>
 #import <snes9x_framework/snes9x_framework.h>
+#import "AppDelegate.h"
 
 int main(int argc, const char * argv[]) {
     // The game window starts this binary again for a second game: the core
     // keeps its state in globals, so one process runs one game.
     if (argc == 4 && strcmp(argv[1], S9xSecondGameArgument.UTF8String) == 0) {
-        return [S9xEngine runSecondGame:[NSURL fileURLWithPath:@(argv[3])] channelName:@(argv[2])];
+        return [S9xEngine runSecondGame:[NSURL fileURLWithPath:@(argv[3])] channelName:@(argv[2]) configure:^(S9xEngine *engine)
+        {
+            [AppDelegate registerDefaultSettings];
+            [AppDelegate applyGameSettingsToEngine:engine];
+        }];
     }
 
     return NSApplicationMain(argc, argv);

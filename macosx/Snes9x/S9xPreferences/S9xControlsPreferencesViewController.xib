@@ -16,11 +16,11 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customView id="Hz6-mo-xeY">
-            <rect key="frame" x="0.0" y="0.0" width="507" height="547"/>
+            <rect key="frame" x="0.0" y="0.0" width="507" height="607"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
             <subviews>
                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hfx-Lg-t9P">
-                    <rect key="frame" x="18" y="503" width="472" height="25"/>
+                    <rect key="frame" x="18" y="563" width="472" height="25"/>
                     <popUpButtonCell key="cell" type="push" title="Player 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="Mes-ZE-LOG" id="3Oa-7I-2cH">
                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="menu"/>
@@ -42,7 +42,7 @@
                     </connections>
                 </popUpButton>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="qMp-14-9zW">
-                    <rect key="frame" x="18" y="443" width="88" height="16"/>
+                    <rect key="frame" x="18" y="503" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Up" id="hua-jM-68w">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -50,7 +50,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2BM-Lt-WwR">
-                    <rect key="frame" x="18" y="413" width="88" height="16"/>
+                    <rect key="frame" x="18" y="473" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Down" id="z7r-rj-abc">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -58,7 +58,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="biW-Zy-9NZ">
-                    <rect key="frame" x="18" y="383" width="88" height="16"/>
+                    <rect key="frame" x="18" y="443" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Left" id="zD3-HS-vYg">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -66,7 +66,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="rsc-8R-cwh">
-                    <rect key="frame" x="18" y="353" width="88" height="16"/>
+                    <rect key="frame" x="18" y="413" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Right" id="m1L-Ha-tjV">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -74,7 +74,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yHT-3q-ctP">
-                    <rect key="frame" x="18" y="323" width="88" height="16"/>
+                    <rect key="frame" x="18" y="383" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="A" id="AOM-k9-LVv">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -82,7 +82,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WcI-SC-fZV">
-                    <rect key="frame" x="18" y="293" width="88" height="16"/>
+                    <rect key="frame" x="18" y="353" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="B" id="afx-UX-ra7">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -90,7 +90,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="atg-Fg-IgS">
-                    <rect key="frame" x="18" y="263" width="88" height="16"/>
+                    <rect key="frame" x="18" y="323" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="X" id="R4J-4s-qIx">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -98,7 +98,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NeB-Rh-CKs">
-                    <rect key="frame" x="18" y="233" width="88" height="16"/>
+                    <rect key="frame" x="18" y="293" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Y" id="Nho-ku-fUk">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -106,7 +106,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rz0-Kg-nHG">
-                    <rect key="frame" x="18" y="203" width="88" height="16"/>
+                    <rect key="frame" x="18" y="263" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="L" id="jvi-9B-mJS">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -114,7 +114,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="AiU-u8-z9t">
-                    <rect key="frame" x="18" y="173" width="88" height="16"/>
+                    <rect key="frame" x="18" y="233" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="R" id="ckb-YM-tFe">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -122,7 +122,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="3Cb-Ht-JzJ">
-                    <rect key="frame" x="18" y="143" width="88" height="16"/>
+                    <rect key="frame" x="18" y="203" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Start" id="oqQ-e5-KNH">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -130,7 +130,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ISU-xt-cZa">
-                    <rect key="frame" x="18" y="113" width="88" height="16"/>
+                    <rect key="frame" x="18" y="173" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Select" id="RW3-fW-YAS">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -138,7 +138,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="c4Z-r1-O38">
-                    <rect key="frame" x="18" y="83" width="88" height="16"/>
+                    <rect key="frame" x="18" y="143" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Function" id="xbY-Z6-sBG">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -146,7 +146,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rsg-HQ-Cig">
-                    <rect key="frame" x="18" y="53" width="88" height="16"/>
+                    <rect key="frame" x="18" y="113" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Alt" id="nKE-jO-OCz">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -154,7 +154,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="dL6-2Y-CIz">
-                    <rect key="frame" x="18" y="23" width="88" height="16"/>
+                    <rect key="frame" x="18" y="83" width="88" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Turbo Control" id="i08-K8-ZqE">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -162,7 +162,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="drA-2C-LPt">
-                    <rect key="frame" x="230" y="443" width="151" height="16"/>
+                    <rect key="frame" x="230" y="503" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Pause/Resume" id="tle-rH-QLe">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -170,7 +170,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5DP-Qu-lS2">
-                    <rect key="frame" x="230" y="413" width="151" height="16"/>
+                    <rect key="frame" x="230" y="473" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Freeze" id="HsC-E3-aUn">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -178,7 +178,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jQs-eL-Df4">
-                    <rect key="frame" x="230" y="383" width="151" height="16"/>
+                    <rect key="frame" x="230" y="443" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Defrost" id="LO9-bN-27u">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -186,7 +186,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="TuE-fA-Shh">
-                    <rect key="frame" x="230" y="353" width="151" height="16"/>
+                    <rect key="frame" x="230" y="413" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Screenshot" id="XrV-eO-k3u">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -194,7 +194,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jHT-Uw-MKM">
-                    <rect key="frame" x="230" y="323" width="151" height="16"/>
+                    <rect key="frame" x="230" y="383" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Fast Forward" id="IrR-8T-GsO">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -202,7 +202,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vrB-v6-gvS">
-                    <rect key="frame" x="230" y="233" width="151" height="16"/>
+                    <rect key="frame" x="230" y="293" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Super Scope Turbo" id="5Ok-p3-jsW">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -210,7 +210,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RXV-hd-YH8">
-                    <rect key="frame" x="230" y="203" width="151" height="16"/>
+                    <rect key="frame" x="230" y="263" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Super Scope Cursor" id="bLP-cT-3YD">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -218,7 +218,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fG8-lF-YYW">
-                    <rect key="frame" x="230" y="173" width="151" height="16"/>
+                    <rect key="frame" x="230" y="233" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Super Scope Off Screen" id="e9h-qE-jme">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -226,7 +226,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eyk-QN-lkH">
-                    <rect key="frame" x="230" y="143" width="151" height="16"/>
+                    <rect key="frame" x="230" y="203" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Pause Super Scope" id="5op-LV-kgt">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -234,7 +234,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="0xy-5S-ffb">
-                    <rect key="frame" x="230" y="113" width="151" height="16"/>
+                    <rect key="frame" x="230" y="173" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Left Mouse" id="hBs-n4-TD6">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -242,7 +242,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jOm-aT-92f">
-                    <rect key="frame" x="230" y="83" width="151" height="16"/>
+                    <rect key="frame" x="230" y="143" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Right Mouse" id="PMa-Fr-3vd">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -250,7 +250,7 @@
                     </textFieldCell>
                 </textField>
                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ymc-Xn-VtU">
-                    <rect key="frame" x="230" y="53" width="151" height="16"/>
+                    <rect key="frame" x="230" y="113" width="151" height="16"/>
                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Save SPC" id="Yvu-uO-lMI">
                         <font key="font" usesAppearanceFont="YES"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -258,7 +258,7 @@
                     </textFieldCell>
                 </textField>
                 <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mJx-JF-xDg">
-                    <rect key="frame" x="18" y="474" width="472" height="25"/>
+                    <rect key="frame" x="18" y="534" width="472" height="25"/>
                     <popUpButtonCell key="cell" type="push" title="Keyboard" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="-1" imageScaling="proportionallyDown" inset="2" selectedItem="Cs2-1w-ccm" id="ui9-4e-0EL">
                         <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="menu"/>
@@ -273,7 +273,7 @@
                     </connections>
                 </popUpButton>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="1" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5wn-WM-n7f" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="410" width="100" height="22"/>
+                    <rect key="frame" x="112" y="470" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="6tU-6G-dKy"/>
                     </constraints>
@@ -284,7 +284,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="2" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pdg-iO-Rlv" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="380" width="100" height="22"/>
+                    <rect key="frame" x="112" y="440" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="Vzs-rb-iSz"/>
                     </constraints>
@@ -295,7 +295,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="i6K-Iu-xdk" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="440" width="100" height="22"/>
+                    <rect key="frame" x="112" y="500" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="B3A-lY-BCn"/>
                         <constraint firstAttribute="width" constant="100" id="TGv-i2-qc7"/>
@@ -307,7 +307,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="3" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W7s-0d-JNo" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="350" width="100" height="22"/>
+                    <rect key="frame" x="112" y="410" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="KgL-oM-FNL"/>
                     </constraints>
@@ -318,7 +318,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="7" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="56u-eS-Y7s" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="320" width="100" height="22"/>
+                    <rect key="frame" x="112" y="380" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="old-cu-PoH"/>
                     </constraints>
@@ -329,7 +329,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="6" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xib-ad-dgH" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="260" width="100" height="22"/>
+                    <rect key="frame" x="112" y="320" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="nCJ-u5-vpC"/>
                     </constraints>
@@ -340,7 +340,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="4" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="lSq-25-AV2" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="230" width="100" height="22"/>
+                    <rect key="frame" x="112" y="290" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="Zwq-yn-TeE"/>
                     </constraints>
@@ -351,7 +351,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="5" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6dg-5z-gNX" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="290" width="100" height="22"/>
+                    <rect key="frame" x="112" y="350" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="Qe9-et-5QN"/>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="jfT-jr-LeY"/>
@@ -363,7 +363,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="8" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ro-Ix-JD5" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="200" width="100" height="22"/>
+                    <rect key="frame" x="112" y="260" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="Jls-qj-Gt0"/>
                     </constraints>
@@ -374,7 +374,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="9" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fkh-aT-XE9" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="170" width="100" height="22"/>
+                    <rect key="frame" x="112" y="230" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="vbp-eP-ql6"/>
                     </constraints>
@@ -385,7 +385,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="11" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hLf-i4-NRV" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="110" width="100" height="22"/>
+                    <rect key="frame" x="112" y="170" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="3XK-UH-gXU"/>
                     </constraints>
@@ -396,7 +396,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="21" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SSJ-4e-Tc8" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="80" width="100" height="22"/>
+                    <rect key="frame" x="112" y="140" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="jbE-Yf-hDQ"/>
                     </constraints>
@@ -407,7 +407,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="10" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ycZ-re-pMx" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="140" width="100" height="22"/>
+                    <rect key="frame" x="112" y="200" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="XTE-Jx-pv7"/>
                         <constraint firstAttribute="width" constant="100" id="qte-MS-3PL"/>
@@ -419,7 +419,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="22" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rX2-Wj-CDJ" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="50" width="100" height="22"/>
+                    <rect key="frame" x="112" y="110" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="mYj-MI-dHJ"/>
                     </constraints>
@@ -430,7 +430,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="26" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r5O-6f-xdH" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="112" y="20" width="100" height="22"/>
+                    <rect key="frame" x="112" y="80" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="0QT-Md-0M0"/>
                     </constraints>
@@ -441,7 +441,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="13" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0FY-cv-M9B" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="410" width="100" height="22"/>
+                    <rect key="frame" x="387" y="470" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="xmT-dz-x8T"/>
                     </constraints>
@@ -452,7 +452,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="14" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fve-dp-udd" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="380" width="100" height="22"/>
+                    <rect key="frame" x="387" y="440" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="l23-fI-CtT"/>
                     </constraints>
@@ -463,7 +463,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="25" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ns3-zZ-EQY" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="440" width="100" height="22"/>
+                    <rect key="frame" x="387" y="500" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="Hvr-RF-2d2"/>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="ILE-7H-7um"/>
@@ -475,7 +475,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="15" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GDm-WA-rkG" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="350" width="100" height="22"/>
+                    <rect key="frame" x="387" y="410" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="B4h-mm-FkB"/>
                     </constraints>
@@ -486,7 +486,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="12" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HIj-cE-Twd" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="320" width="100" height="22"/>
+                    <rect key="frame" x="387" y="380" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="IEA-AN-TmA"/>
                     </constraints>
@@ -497,7 +497,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="17" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yHB-42-ebc" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="230" width="100" height="22"/>
+                    <rect key="frame" x="387" y="290" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="saj-Wb-IdB"/>
                     </constraints>
@@ -508,7 +508,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="19" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="E3S-mU-OmJ" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="200" width="100" height="22"/>
+                    <rect key="frame" x="387" y="260" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="ayN-Z9-uyh"/>
                     </constraints>
@@ -519,7 +519,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="20" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lw1-zP-Vdy" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="170" width="100" height="22"/>
+                    <rect key="frame" x="387" y="230" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="tyK-xj-HxC"/>
                     </constraints>
@@ -530,7 +530,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="27" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="S5E-xU-QAK" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="110" width="100" height="22"/>
+                    <rect key="frame" x="387" y="170" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="JGe-qf-ind"/>
                     </constraints>
@@ -541,7 +541,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="28" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WCt-Ri-ndL" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="80" width="100" height="22"/>
+                    <rect key="frame" x="387" y="140" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="khS-Ng-mZK"/>
                     </constraints>
@@ -552,7 +552,7 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="18" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eZA-Af-a2e" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="140" width="100" height="22"/>
+                    <rect key="frame" x="387" y="200" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="100" id="LjM-MK-DCE"/>
                         <constraint firstAttribute="width" constant="100" id="OO3-Rg-dMj"/>
@@ -564,11 +564,106 @@
                     </searchFieldCell>
                 </searchField>
                 <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="16" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" id="iZL-4Q-g2k" customClass="S9xButtonConfigTextField">
-                    <rect key="frame" x="387" y="50" width="100" height="22"/>
+                    <rect key="frame" x="387" y="110" width="100" height="22"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="100" id="VOg-Zt-Sna"/>
                     </constraints>
                     <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="RUv-v1-sy4">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                </searchField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cmd-L0-Lbl">
+                    <rect key="frame" x="230" y="353" width="151" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Open ROM" id="Cmd-C0-Cel">
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="29" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" toolTip="Only a gamepad can trigger this." id="Cmd-F0-Fld" customClass="S9xButtonConfigTextField">
+                    <rect key="frame" x="387" y="350" width="100" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="Cmd-W0-Wid"/>
+                    </constraints>
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Cmd-E0-Cel">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                </searchField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cmd-L1-Lbl">
+                    <rect key="frame" x="230" y="323" width="151" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Open Second ROM" id="Cmd-C1-Cel">
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="30" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" toolTip="Only a gamepad can trigger this." id="Cmd-F1-Fld" customClass="S9xButtonConfigTextField">
+                    <rect key="frame" x="387" y="320" width="100" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="Cmd-W1-Wid"/>
+                    </constraints>
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Cmd-E1-Cel">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                </searchField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cmd-L2-Lbl">
+                    <rect key="frame" x="230" y="83" width="151" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reset" id="Cmd-C2-Cel">
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="31" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" toolTip="Only a gamepad can trigger this." id="Cmd-F2-Fld" customClass="S9xButtonConfigTextField">
+                    <rect key="frame" x="387" y="80" width="100" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="Cmd-W2-Wid"/>
+                    </constraints>
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Cmd-E2-Cel">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                </searchField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cmd-L3-Lbl">
+                    <rect key="frame" x="230" y="53" width="151" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Swap Sound" id="Cmd-C3-Cel">
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="32" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" toolTip="Only a gamepad can trigger this." id="Cmd-F3-Fld" customClass="S9xButtonConfigTextField">
+                    <rect key="frame" x="387" y="50" width="100" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="Cmd-W3-Wid"/>
+                    </constraints>
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Cmd-E3-Cel">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </searchFieldCell>
+                </searchField>
+                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Cmd-L4-Lbl">
+                    <rect key="frame" x="230" y="23" width="151" height="16"/>
+                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Swap Gamepads" id="Cmd-C4-Cel">
+                        <font key="font" usesAppearanceFont="YES"/>
+                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                    </textFieldCell>
+                </textField>
+                <searchField wantsLayer="YES" verticalHuggingPriority="750" tag="33" textCompletion="NO" translatesAutoresizingMaskIntoConstraints="NO" toolTip="Only a gamepad can trigger this." id="Cmd-F4-Fld" customClass="S9xButtonConfigTextField">
+                    <rect key="frame" x="387" y="20" width="100" height="22"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="100" id="Cmd-W4-Wid"/>
+                    </constraints>
+                    <searchFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" borderStyle="bezel" usesSingleLineMode="YES" bezelStyle="round" id="Cmd-E4-Cel">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -654,7 +749,7 @@
                 <constraint firstItem="Pdg-iO-Rlv" firstAttribute="leading" secondItem="biW-Zy-9NZ" secondAttribute="trailing" constant="8" id="Y6V-wt-Xb5"/>
                 <constraint firstItem="Rsg-HQ-Cig" firstAttribute="width" secondItem="dL6-2Y-CIz" secondAttribute="width" id="Y72-0k-X9j"/>
                 <constraint firstItem="rsc-8R-cwh" firstAttribute="leading" secondItem="Hz6-mo-xeY" secondAttribute="leading" constant="20" id="Yar-cB-3Qx"/>
-                <constraint firstAttribute="bottom" secondItem="r5O-6f-xdH" secondAttribute="bottom" constant="20" id="ZFe-ts-Cxn"/>
+                <constraint firstAttribute="bottom" secondItem="Cmd-F4-Fld" secondAttribute="bottom" constant="20" id="ZFe-ts-Cxn"/>
                 <constraint firstItem="5Ro-Ix-JD5" firstAttribute="leading" secondItem="Rz0-Kg-nHG" secondAttribute="trailing" constant="8" id="ZT8-H1-D7g"/>
                 <constraint firstItem="vrB-v6-gvS" firstAttribute="leading" secondItem="RXV-hd-YH8" secondAttribute="leading" id="ZkV-M1-Yc3"/>
                 <constraint firstItem="2BM-Lt-WwR" firstAttribute="width" secondItem="biW-Zy-9NZ" secondAttribute="width" id="a8L-cO-AXv"/>
@@ -719,6 +814,31 @@
                 <constraint firstItem="0FY-cv-M9B" firstAttribute="top" secondItem="Ns3-zZ-EQY" secondAttribute="bottom" constant="8" id="z51-WK-EFf"/>
                 <constraint firstItem="fG8-lF-YYW" firstAttribute="width" secondItem="eyk-QN-lkH" secondAttribute="width" id="zN5-Ta-ZyL"/>
                 <constraint firstItem="AiU-u8-z9t" firstAttribute="width" secondItem="3Cb-Ht-JzJ" secondAttribute="width" id="zY2-nG-XLO"/>
+                <constraint firstItem="Cmd-L0-Lbl" firstAttribute="leading" secondItem="Ymc-Xn-VtU" secondAttribute="leading" id="Cmd-A0-Lea"/>
+                <constraint firstItem="Cmd-L0-Lbl" firstAttribute="width" secondItem="Ymc-Xn-VtU" secondAttribute="width" id="Cmd-B0-Wid"/>
+                <constraint firstItem="Cmd-F0-Fld" firstAttribute="firstBaseline" secondItem="Cmd-L0-Lbl" secondAttribute="firstBaseline" id="Cmd-D0-Bas"/>
+                <constraint firstItem="Cmd-F0-Fld" firstAttribute="leading" secondItem="Cmd-L0-Lbl" secondAttribute="trailing" constant="8" id="Cmd-G0-Lea"/>
+                <constraint firstItem="Cmd-F0-Fld" firstAttribute="top" secondItem="HIj-cE-Twd" secondAttribute="bottom" constant="8" id="Cmd-H0-Top"/>
+                <constraint firstItem="Cmd-L1-Lbl" firstAttribute="leading" secondItem="Ymc-Xn-VtU" secondAttribute="leading" id="Cmd-A1-Lea"/>
+                <constraint firstItem="Cmd-L1-Lbl" firstAttribute="width" secondItem="Ymc-Xn-VtU" secondAttribute="width" id="Cmd-B1-Wid"/>
+                <constraint firstItem="Cmd-F1-Fld" firstAttribute="firstBaseline" secondItem="Cmd-L1-Lbl" secondAttribute="firstBaseline" id="Cmd-D1-Bas"/>
+                <constraint firstItem="Cmd-F1-Fld" firstAttribute="leading" secondItem="Cmd-L1-Lbl" secondAttribute="trailing" constant="8" id="Cmd-G1-Lea"/>
+                <constraint firstItem="Cmd-F1-Fld" firstAttribute="top" secondItem="Cmd-F0-Fld" secondAttribute="bottom" constant="8" id="Cmd-H1-Top"/>
+                <constraint firstItem="Cmd-L2-Lbl" firstAttribute="leading" secondItem="Ymc-Xn-VtU" secondAttribute="leading" id="Cmd-A2-Lea"/>
+                <constraint firstItem="Cmd-L2-Lbl" firstAttribute="width" secondItem="Ymc-Xn-VtU" secondAttribute="width" id="Cmd-B2-Wid"/>
+                <constraint firstItem="Cmd-F2-Fld" firstAttribute="firstBaseline" secondItem="Cmd-L2-Lbl" secondAttribute="firstBaseline" id="Cmd-D2-Bas"/>
+                <constraint firstItem="Cmd-F2-Fld" firstAttribute="leading" secondItem="Cmd-L2-Lbl" secondAttribute="trailing" constant="8" id="Cmd-G2-Lea"/>
+                <constraint firstItem="Cmd-F2-Fld" firstAttribute="top" secondItem="iZL-4Q-g2k" secondAttribute="bottom" constant="8" id="Cmd-H2-Top"/>
+                <constraint firstItem="Cmd-L3-Lbl" firstAttribute="leading" secondItem="Ymc-Xn-VtU" secondAttribute="leading" id="Cmd-A3-Lea"/>
+                <constraint firstItem="Cmd-L3-Lbl" firstAttribute="width" secondItem="Ymc-Xn-VtU" secondAttribute="width" id="Cmd-B3-Wid"/>
+                <constraint firstItem="Cmd-F3-Fld" firstAttribute="firstBaseline" secondItem="Cmd-L3-Lbl" secondAttribute="firstBaseline" id="Cmd-D3-Bas"/>
+                <constraint firstItem="Cmd-F3-Fld" firstAttribute="leading" secondItem="Cmd-L3-Lbl" secondAttribute="trailing" constant="8" id="Cmd-G3-Lea"/>
+                <constraint firstItem="Cmd-F3-Fld" firstAttribute="top" secondItem="Cmd-F2-Fld" secondAttribute="bottom" constant="8" id="Cmd-H3-Top"/>
+                <constraint firstItem="Cmd-L4-Lbl" firstAttribute="leading" secondItem="Ymc-Xn-VtU" secondAttribute="leading" id="Cmd-A4-Lea"/>
+                <constraint firstItem="Cmd-L4-Lbl" firstAttribute="width" secondItem="Ymc-Xn-VtU" secondAttribute="width" id="Cmd-B4-Wid"/>
+                <constraint firstItem="Cmd-F4-Fld" firstAttribute="firstBaseline" secondItem="Cmd-L4-Lbl" secondAttribute="firstBaseline" id="Cmd-D4-Bas"/>
+                <constraint firstItem="Cmd-F4-Fld" firstAttribute="leading" secondItem="Cmd-L4-Lbl" secondAttribute="trailing" constant="8" id="Cmd-G4-Lea"/>
+                <constraint firstItem="Cmd-F4-Fld" firstAttribute="top" secondItem="Cmd-F3-Fld" secondAttribute="bottom" constant="8" id="Cmd-H4-Top"/>
             </constraints>
             <point key="canvasLocation" x="100.5" y="317.5"/>
         </customView>

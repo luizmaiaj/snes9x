@@ -60,6 +60,13 @@ protocol SecondGameRunner: AnyObject {
     func setInput(_ key: String?)
 }
 
+/// A toolbar command a gamepad button can trigger, in the order of
+/// `kCommandOpenROM` and those after it.
+@objc(S9xPadCommand)
+public enum PadCommand: Int {
+    case openROM, openSecondROM, reset, swapSound, swapGamepads
+}
+
 /// A connected gamepad, identified by the key Snes9x saves its settings under.
 @objc(S9xGamepad)
 public final class Gamepad: NSObject {
@@ -358,6 +365,31 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
         if let free = assignments.connectedGamepads().first(where: { assignments.player(forGamepadKey: $0.key) < 0 }) {
             setSecondGameInput(free.key)
+        }
+    }
+
+    // MARK: - Gamepad commands
+
+    /// Does what the command's toolbar button does, or nothing when that button
+    /// is disabled. Reset acts on the game the gamepad controls.
+    @objc public func performPadCommand(_ command: PadCommand, forSecondGame: Bool) {
+        switch command {
+        case .openROM:
+            openROM()
+        case .openSecondROM:
+            if isRunning && !hasSecondGame {
+                openSecondROM()
+            }
+        case .reset:
+            if forSecondGame {
+                resetSecondGame()
+            } else {
+                reset()
+            }
+        case .swapSound:
+            swapSound()
+        case .swapGamepads:
+            swapGamepads()
         }
     }
 

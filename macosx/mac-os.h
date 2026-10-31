@@ -273,6 +273,10 @@ typedef NS_ENUM(uint32_t, S9xWatchPointFormat)
 - (BOOL)handleInput:(S9xJoypadInput *)input fromJoypad:(S9xJoypad *)joypad;
 - (void)deviceSettingChanged:(S9xDeviceSetting)deviceSetting;
 - (void)joypadsChanged;
+
+/// A gamepad button bound to a command, from kCommandOpenROM on, was pressed.
+/// Runs on the main thread. `forSecondGame` says which game holds that gamepad.
+- (void)performCommand:(S9xButtonCode)command forSecondGame:(BOOL)forSecondGame;
 @end
 
 extern id<S9xInputDelegate> inputDelegate;
@@ -329,7 +333,7 @@ extern id<S9xInputDelegate> inputDelegate;
 /// Runs a ROM in this process for a window in another one, muted, with input
 /// from the channel, until that process stops it. Returns only if the game
 /// can't start.
-+ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName;
++ (int)runSecondGame:(NSURL *)fileURL channelName:(NSString *)channelName configure:(void (^)(S9xEngine *engine))configure;
 
 /// Sends the second game's input to `channel`; nil ends that and gives the
 /// keyboard back to this game.

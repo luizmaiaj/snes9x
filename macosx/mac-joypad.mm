@@ -44,6 +44,7 @@ std::unordered_map<JoypadDevice, int8> playerNumByDevice;
 std::unordered_map<uint32, int8> deviceIndexByPort;
 std::unordered_map<JoypadCookie, JoypadCookieInfo> infoByCookie;
 std::unordered_map<JoypadInput, S9xButtonCode> buttonCodeByJoypadInput;
+std::unordered_map<JoypadDevice, uint32> heldCommandsByDevice;
 std::unordered_map<JoypadDevice, std::string> namesByDevice;
 
 struct ConnectedJoypad {
@@ -99,6 +100,22 @@ std::string NameForDevice(struct JoypadDevice device) {
     return "";
 }
 
+// One bit per command, from kCommandOpenROM. They run after this event, as a
+// command can open a panel.
+static void PerformCommands(uint32 commands, bool forSecondGame)
+{
+    for (int button = kCommandOpenROM; button < kNumButtonCodes; button++)
+    {
+        if (commands & (1 << (button - kCommandOpenROM)))
+        {
+            dispatch_async(dispatch_get_main_queue(), ^
+            {
+                [inputDelegate performCommand:(S9xButtonCode)button forSecondGame:forSecondGame];
+            });
+        }
+    }
+}
+
 void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValueRef v) {
     pthread_mutex_lock(&keyLock);
 
@@ -142,9 +159,19 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
         return;
     }
 
+    // A hat lets go of its direction before pressing the next one, so what's
+    // new is only known at the end of the event.
+    uint32 heldCommands = heldCommandsByDevice[deviceStruct];
+
     auto press = [=](S9xButtonCode button, bool pressed)
     {
-        if (forSecondGame)
+        if (button >= kCommandOpenROM)
+        {
+            uint32 command = 1 << (button - kCommandOpenROM);
+            uint32 &held = heldCommandsByDevice[deviceStruct];
+            held = pressed ? (held | command) : (held & ~command);
+        }
+        else if (forSecondGame)
         {
             [secondGameInput setGamepadButton:button pressed:pressed];
         }
@@ -312,7 +339,11 @@ void gamepadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValu
         }
     }
 
+    uint32 newCommands = heldCommandsByDevice[deviceStruct] & ~heldCommands;
+
     pthread_mutex_unlock(&keyLock);
+
+    PerformCommands(newCommands, forSecondGame);
 }
 
 void findControls(struct JoypadDevice &device, NSDictionary *properties, NSMutableArray<NSDictionary *> *buttons, NSMutableArray<NSDictionary *> *axes, NSMutableDictionary *hat)
@@ -753,6 +784,7 @@ void JoypadDisconnected (void *inContext, IOReturn inResult, void *inSender, IOH
     connectedJoypads.erase(connected);
     allDevices.erase(joypad);
     namesByDevice.erase(joypad);
+    heldCommandsByDevice.erase(joypad);
 
     // Its buttons would otherwise stay pressed, with no release ever coming.
     if (joypad == secondGameJoypad)
@@ -956,7 +988,7 @@ void SetPlayerForJoypad(int8 playerNum, uint32 vendorID, uint32 productID, uint3
 
 bool SetButtonCodeForJoypadControl(uint32 vendorID, uint32 productID, uint32 index, uint32 cookie, int32 value, S9xButtonCode buttonCode, bool overwrite, S9xButtonCode *oldButtonCode)
 {
-    if (buttonCode < 0 || buttonCode >= kNumButtons)
+    if (buttonCode < 0 || buttonCode >= kNumButtonCodes)
     {
         return false;
     }

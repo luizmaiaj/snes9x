@@ -216,7 +216,17 @@ typedef enum
     kKeyMouseLeft,
     kKeyMouseRight,
 
-    kNumButtons
+    kNumButtons,
+
+    // Commands only a gamepad triggers. They stay out of kNumButtons: keyboard
+    // settings are saved by it, and game 2's buttons travel as bits of 32.
+    kCommandOpenROM = kNumButtons,
+    kCommandOpenSecondROM,
+    kCommandReset,
+    kCommandSwapSound,
+    kCommandSwapGamepads,
+
+    kNumButtonCodes
 } S9xButtonCode;
 
 typedef enum {

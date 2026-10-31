@@ -27,7 +27,12 @@
 #include "display.h"
 #include "blit.h"
 
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <atomic>
 
 #include "mac-prefix.h"
 #include "mac-os.h"
@@ -57,6 +62,170 @@ typedef struct
 - (BOOL)layer:(CALayer *)layer shouldInheritContentsScale:(CGFloat)newScale fromWindow:(NSWindow *)window
 {
 	return YES;
+}
+
+@end
+
+S9xFrameChannel				*secondGameChannel = nil;
+
+// Two frames, so the window can read one while the game writes the other.
+struct SharedFrames
+{
+	std::atomic<uint32>	sequence;	// Frames published so far; its low bit picks the newest.
+	int32				width[2];
+	int32				height[2];
+	uint8				pixels[2][MAX_SNES_WIDTH * MAX_SNES_HEIGHT * 4];
+};
+
+static_assert(ATOMIC_INT_LOCK_FREE == 2, "the two processes can't share a lock");
+
+@implementation S9xFrameChannel
+{
+	SharedFrames	*frames;
+	uint32			lastRead;
+	BOOL			created;
+}
+
+- (instancetype)initWithName:(NSString *)name descriptor:(int)descriptor created:(BOOL)didCreate
+{
+	struct stat info;
+
+	if (descriptor < 0)
+	{
+		return nil;
+	}
+
+	void *memory = MAP_FAILED;
+
+	if (fstat(descriptor, &info) == 0 && info.st_size >= (off_t) sizeof(SharedFrames))
+	{
+		memory = mmap(NULL, sizeof(SharedFrames), PROT_READ | PROT_WRITE, MAP_SHARED, descriptor, 0);
+	}
+
+	close(descriptor);
+
+	if (memory == MAP_FAILED)
+	{
+		if (didCreate)
+		{
+			shm_unlink(name.UTF8String);
+		}
+
+		return nil;
+	}
+
+	if (self = [super init])
+	{
+		_name = [name copy];
+		frames = (SharedFrames *) memory;
+		created = didCreate;
+	}
+
+	return self;
+}
+
++ (S9xFrameChannel *)createChannel
+{
+	static std::atomic<int> count(0);
+
+	// shm_open names can't pass PSHMNAMLEN, 31 characters.
+	NSString *name = [NSString stringWithFormat:@"/s9x-%d-%d", getpid(), ++count];
+	int descriptor = shm_open(name.UTF8String, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+
+	if (descriptor < 0)
+	{
+		return nil;
+	}
+
+	if (ftruncate(descriptor, sizeof(SharedFrames)) != 0)
+	{
+		close(descriptor);
+		shm_unlink(name.UTF8String);
+		return nil;
+	}
+
+	return [[S9xFrameChannel alloc] initWithName:name descriptor:descriptor created:YES];
+}
+
++ (S9xFrameChannel *)openChannelWithName:(NSString *)name
+{
+	return [[S9xFrameChannel alloc] initWithName:name descriptor:shm_open(name.UTF8String, O_RDWR) created:NO];
+}
+
+- (void)dealloc
+{
+	munmap(frames, sizeof(SharedFrames));
+
+	if (created)
+	{
+		shm_unlink(_name.UTF8String);
+	}
+}
+
+- (BOOL)writeFrame:(const void *)rgba width:(int)width height:(int)height
+{
+	if (width <= 0 || height <= 0 || width > MAX_SNES_WIDTH || height > MAX_SNES_HEIGHT)
+	{
+		return NO;
+	}
+
+	uint32 next = frames->sequence.load(std::memory_order_relaxed) + 1;
+	uint32 slot = next & 1;
+
+	frames->width[slot] = width;
+	frames->height[slot] = height;
+	memcpy(frames->pixels[slot], rgba, width * height * 4);
+	frames->sequence.store(next, std::memory_order_release);
+
+	return YES;
+}
+
+- (CGImageRef)copyNewestImage
+{
+	// The game may lap this read; a retry gets the frame after it.
+	for (int attempt = 0; attempt < 3; attempt++)
+	{
+		uint32 sequence = frames->sequence.load(std::memory_order_acquire);
+
+		if (sequence == 0 || sequence == lastRead)
+		{
+			return NULL;
+		}
+
+		uint32 slot = sequence & 1;
+		int32 width = frames->width[slot];
+		int32 height = frames->height[slot];
+
+		// The other process wrote these, so don't trust them.
+		if (width <= 0 || height <= 0 || width > MAX_SNES_WIDTH || height > MAX_SNES_HEIGHT)
+		{
+			return NULL;
+		}
+
+		NSData *pixels = [NSData dataWithBytes:frames->pixels[slot] length:width * height * 4];
+
+		std::atomic_thread_fence(std::memory_order_acquire);
+
+		if (frames->sequence.load(std::memory_order_relaxed) != sequence)
+		{
+			continue;
+		}
+
+		lastRead = sequence;
+
+		CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef) pixels);
+		CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+		CGImageRef image = CGImageCreate(width, height, 8, 32, width * 4, colorSpace,
+										 kCGImageAlphaNoneSkipLast | kCGBitmapByteOrderDefault,
+										 provider, NULL, false, kCGRenderingIntentDefault);
+
+		CGColorSpaceRelease(colorSpace);
+		CGDataProviderRelease(provider);
+
+		return image;
+	}
+
+	return NULL;
 }
 
 @end
@@ -206,7 +375,7 @@ void S9xInitDisplay (int argc, char **argv)
 
     S9xInitMetal();
 
-	S9xSetSoundMute(false);
+	S9xSetSoundMute(secondGameChannel != nil);
     lastFrame = GetMicroseconds();
 }
 
@@ -322,6 +491,12 @@ static void S9xPutImageMetal (int width, int height, uint16 *buffer16)
 		}
 	}
 	
+	if (secondGameChannel != nil)
+	{
+		[secondGameChannel writeFrame:buffer width:width height:height];
+		return;
+	}
+
 	CGSize layerSize = metalLayer.bounds.size;
 	
 	@autoreleasepool {

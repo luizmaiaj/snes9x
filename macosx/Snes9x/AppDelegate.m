@@ -48,6 +48,10 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     {
         return [weakSelf openURL:url];
     };
+    self.emulator.cantOpenHandler = ^(NSURL *url)
+    {
+        [weakSelf showCantOpen:url because:NSLocalizedString(@"It isn't a Super Nintendo ROM.", @"")];
+    };
     self.s9xEngine.emulationDelegate = self.emulator;
     self.emulator.gamepadAssignments = self;
     [self.emulator assignPlayer1GamepadIfNeeded];
@@ -68,10 +72,13 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
         [gameWindow center];
     }
 
+    [S9xGameWindowHosting applyMinimumWidthTo:gameWindow];
+
     self.gameWindow = gameWindow;
 
     [NSNotificationCenter.defaultCenter addObserverForName:NSWindowWillCloseNotification object:gameWindow queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *notification)
     {
+        [self.emulator closeSecondGame];
         [self.s9xEngine quit];
     }];
 
@@ -85,6 +92,7 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 }
 
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
+    [self.emulator closeSecondGame];
     [self.s9xEngine quit];
 }
 
@@ -567,6 +575,11 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
     [alert runModal];
 }
 
+- (IBAction)closeSecondGame:(id)sender
+{
+    [self.emulator closeSecondGame];
+}
+
 - (IBAction)openMultiple:(id)sender
 {
     S9xOpenMultipleViewController *vc = [[S9xOpenMultipleViewController alloc] initWithNibName:@"S9xOpenMultipleViewController" bundle:nil];
@@ -628,6 +641,9 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 	}
 	else if (action == @selector(terminate:)) {
 		return YES;
+	}
+	else if (action == @selector(closeSecondGame:)) {
+		return self.emulator.hasSecondGame;
 	}
 	else if (action == @selector(updateTurboRate:)) {
 		menuItem.state = ([NSUserDefaults.standardUserDefaults integerForKey:kTurboRatePref] == menuItem.tag) ? NSOnState : NSOffState;

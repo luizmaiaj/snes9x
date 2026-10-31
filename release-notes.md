@@ -1,8 +1,7 @@
 ## Unreleased
 
 ### Added
-- macOS: Save State and Load State buttons in the game window's toolbar open the same slot picker as the Freeze and Defrost keys (#17)
+- macOS: an Open Second ROM button beside Open ROM runs a second game next to the first in the same window, and File → Close Second Game ends it. The window doubles in width and goes back afterwards. The second game runs muted, has no gamepad yet, and keeps its saves in a Second Game folder, so the same ROM can run as both games (#18)
 
-### Fixed
-- macOS: the Pause button no longer shows the wrong state after the slot picker resumes a paused game (#17)
-- macOS: Open MultiCart now checks the first file before stopping the running game, and shows an error if it isn't a cart or the Sufami Turbo BIOS is missing (#16)
+### Changed
+- macOS: the game window is now at least 536 pt wide, so every toolbar button shows beside a long game title (#18)

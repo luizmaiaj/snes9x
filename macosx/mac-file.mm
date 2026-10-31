@@ -305,6 +305,11 @@ const char * S9xGetFilename (const char *inExt, enum s9x_getdirtype dirtype)
 		strncpy(filePath[index], makepath(path).c_str(), PATH_MAX);
 	}
 
+	if (secondGameChannel != nil && (type == '.srm' || type == '.rtc' || type == '.frz' || type == '.cht'))
+	{
+		strlcpy(filePath[index], [S9xEngine secondGameSavePath:@(filePath[index])].UTF8String, PATH_MAX + 1);
+	}
+
 	return (filePath[index]);
 }
 

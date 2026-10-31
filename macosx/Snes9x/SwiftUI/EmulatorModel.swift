@@ -32,6 +32,17 @@ public protocol GameEngine: NSObjectProtocol {
     func loadState()
 }
 
+/// Runs a second game beside the first. Two games can't share a process, as
+/// the core keeps its state in globals.
+protocol SecondGameRunner: AnyObject {
+    /// Starts `url` and returns the view showing it, or nil when it can't start.
+    /// `onExit` runs if the game ends without `stop()` being called.
+    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView?
+
+    /// Ends the game, which saves it first.
+    func stop()
+}
+
 /// A connected gamepad, identified by the key Snes9x saves its settings under.
 @objc(S9xGamepad)
 public final class Gamepad: NSObject {
@@ -77,6 +88,9 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// Whether the running game is paused.
     @Published private(set) var isPaused = false
 
+    /// The view showing the second game, or nil when there's only one game.
+    @Published private(set) var secondGameView: NSView?
+
     /// The gamepads connected now.
     @Published private(set) var gamepads: [Gamepad] = []
 
@@ -87,6 +101,9 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// every entry point goes through `-[AppDelegate openURL:]`.
     @objc public var openHandler: ((URL) -> Bool)?
 
+    /// Tells the user a file can't be opened as the second game.
+    @objc public var cantOpenHandler: ((URL) -> Void)?
+
     /// Reads and saves which gamepad each player uses.
     @objc public weak var gamepadAssignments: GamepadAssignments? {
         didSet {
@@ -96,6 +113,9 @@ public final class EmulatorModel: NSObject, ObservableObject {
 
     /// Asks the user for a ROM file; returns nil when they cancel.
     var chooseROM: () -> URL? = EmulatorModel.runOpenPanel
+
+    /// Runs the second game.
+    var secondGameRunner: SecondGameRunner = SecondGameProcess()
 
     /// What Preferences → Controls saves for a player on the keyboard.
     private static let keyboardKey = "0:0:0"
@@ -140,6 +160,46 @@ public final class EmulatorModel: NSObject, ObservableObject {
         panel.allowsMultipleSelection = false
 
         return panel.runModal() == .OK ? panel.url : nil
+    }
+
+    // MARK: - The second game
+
+    /// Whether a second game is showing beside the first.
+    @objc public var hasSecondGame: Bool {
+        secondGameView != nil
+    }
+
+    /// Lets the user pick a ROM to show beside the running game.
+    func openSecondROM() {
+        if let url = chooseROM() {
+            openSecondGame(url)
+        }
+    }
+
+    /// Shows `url` beside the running game, which carries on. The same ROM is
+    /// fine: the second game has its own saves.
+    @objc public func openSecondGame(_ url: URL) {
+        guard isRunning, secondGameView == nil else {
+            return
+        }
+
+        secondGameView = secondGameRunner.start(url) { [weak self] in
+            self?.secondGameView = nil
+        }
+
+        if secondGameView == nil {
+            cantOpenHandler?(url)
+        }
+    }
+
+    /// Ends the second game and gives the window back to the first.
+    @objc public func closeSecondGame() {
+        guard secondGameView != nil else {
+            return
+        }
+
+        secondGameRunner.stop()
+        secondGameView = nil
     }
 
     // MARK: - Pause and reset

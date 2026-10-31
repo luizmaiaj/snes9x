@@ -7,6 +7,93 @@
 import AppKit
 import Combine
 import SwiftUI
+import snes9x_framework
+
+/// Shows the frames of a game running in another process, on each screen
+/// refresh, scaled without smoothing like the first game.
+final class SecondGameView: NSView {
+    private let channel: S9xFrameChannel
+    private var refresh: CADisplayLink?
+
+    init(channel: S9xFrameChannel) {
+        self.channel = channel
+        super.init(frame: NSRect(x: 0, y: 0, width: 512, height: 478))
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.black.cgColor
+        layer?.contentsGravity = .resize
+        layer?.magnificationFilter = .nearest
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+
+        // A display link holds its target, so it can't outlive the window.
+        refresh?.invalidate()
+        refresh = nil
+
+        guard window != nil else {
+            return
+        }
+
+        let link = displayLink(target: self, selector: #selector(showNewestFrame))
+        link.add(to: .main, forMode: .common)
+        refresh = link
+    }
+
+    @objc private func showNewestFrame() {
+        guard let image = channel.copyNewestImage() else {
+            return
+        }
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer?.contents = image
+        CATransaction.commit()
+    }
+}
+
+/// Runs the second game in another copy of this app, which draws to a frame
+/// channel that `SecondGameView` shows.
+final class SecondGameProcess: SecondGameRunner {
+    private var process: Process?
+
+    func start(_ url: URL, onExit: @escaping @MainActor () -> Void) -> NSView? {
+        guard S9xEngine.looksLikeROM(url),
+              let executable = Bundle.main.executableURL,
+              let channel = S9xFrameChannel.create() else {
+            return nil
+        }
+
+        let process = Process()
+        process.executableURL = executable
+        process.arguments = [S9xSecondGameArgument, channel.name, url.path]
+        process.terminationHandler = { _ in
+            Task { @MainActor in
+                onExit()
+            }
+        }
+
+        do {
+            try process.run()
+        } catch {
+            return nil
+        }
+
+        self.process = process
+
+        return SecondGameView(channel: channel)
+    }
+
+    func stop() {
+        process?.terminationHandler = nil
+        process?.terminate()
+        process = nil
+    }
+}
 
 /// Holds the engine's game view and lays it out the way the AppKit window
 /// showed it: full height, centred horizontally, as wide as the SNES aspect
@@ -17,6 +104,12 @@ import SwiftUI
 /// depending on the height, so the container sizes the view itself.
 final class GameContainerView: NSView {
     private(set) weak var gameView: NSView?
+
+    /// The second game's view, in the right half when there is one.
+    private(set) weak var secondGameView: NSView?
+
+    /// The window's frame before it grew to fit the second game.
+    private var frameBeforeSecondGame: NSRect?
 
     /// The smallest size the current game view allows (its size when created).
     private(set) var minimumSize = NSSize.zero
@@ -51,6 +144,53 @@ final class GameContainerView: NSView {
         needsLayout = true
     }
 
+    func showSecondGame(_ newView: NSView?) {
+        guard newView !== secondGameView else {
+            return
+        }
+
+        secondGameView?.removeFromSuperview()
+        secondGameView = newView
+
+        if let newView {
+            newView.autoresizingMask = []
+            addSubview(newView)
+            growWindow()
+        } else {
+            restoreWindow()
+        }
+
+        needsLayout = true
+    }
+
+    /// Doubles the game area so the first game keeps its size, as far as the
+    /// screen has room.
+    private func growWindow() {
+        guard let window, !window.styleMask.contains(.fullScreen) else {
+            return
+        }
+
+        frameBeforeSecondGame = window.frame
+
+        var frame = window.frame
+        frame.size.width += bounds.width
+
+        if let visible = window.screen?.visibleFrame {
+            frame.size.width = min(frame.width, visible.width)
+            frame.origin.x = max(visible.minX, min(frame.minX, visible.maxX - frame.width))
+        }
+
+        window.setFrame(frame, display: true)
+    }
+
+    private func restoreWindow() {
+        if let frameBeforeSecondGame, let window, !window.styleMask.contains(.fullScreen) {
+            window.setFrame(frameBeforeSecondGame, display: true)
+        }
+
+        frameBeforeSecondGame = nil
+    }
+
     override func layout() {
         super.layout()
 
@@ -58,11 +198,23 @@ final class GameContainerView: NSView {
             return
         }
 
-        let height = bounds.height
-        let aspectWidth = height * minimumSize.width / minimumSize.height
-        let width = min(bounds.width, max(aspectWidth, minimumSize.width))
+        guard let secondGameView else {
+            gameView.frame = fitted(in: bounds)
+            return
+        }
 
-        gameView.frame = NSRect(x: (bounds.width - width) / 2, y: 0, width: width, height: height)
+        let half = bounds.width / 2
+        gameView.frame = fitted(in: NSRect(x: 0, y: 0, width: half, height: bounds.height))
+        secondGameView.frame = fitted(in: NSRect(x: half, y: 0, width: half, height: bounds.height))
+    }
+
+    /// A game filling the height of `slot`, centred in it.
+    private func fitted(in slot: NSRect) -> NSRect {
+        let height = slot.height
+        let aspectWidth = height * minimumSize.width / minimumSize.height
+        let width = min(slot.width, max(aspectWidth, minimumSize.width))
+
+        return NSRect(x: slot.midX - width / 2, y: slot.minY, width: width, height: height)
     }
 }
 
@@ -72,6 +224,7 @@ struct GameView: NSViewRepresentable {
 
     final class Coordinator {
         var subscription: AnyCancellable?
+        var secondGameSubscription: AnyCancellable?
     }
 
     func makeCoordinator() -> Coordinator {
@@ -86,6 +239,10 @@ struct GameView: NSViewRepresentable {
         // must already be in the window by then.
         context.coordinator.subscription = model.$gameView.sink { [weak container] view in
             container?.show(view)
+        }
+
+        context.coordinator.secondGameSubscription = model.$secondGameView.sink { [weak container] view in
+            container?.showSecondGame(view)
         }
 
         return container
@@ -113,6 +270,25 @@ struct GameWindowContent: View {
                         Label("Open ROM", systemImage: "folder")
                     }
                     .help("Open a ROM file and start the game")
+                }
+
+                ToolbarItem(placement: .navigation) {
+                    Button {
+                        model.openSecondROM()
+                    } label: {
+                        Label {
+                            Text("Open Second ROM")
+                        } icon: {
+                            Image(systemName: "folder")
+                                .overlay {
+                                    Text(verbatim: "2")
+                                        .font(.system(size: 9, weight: .bold))
+                                        .offset(y: 1)
+                                }
+                        }
+                    }
+                    .help("Open a ROM beside the running game. It runs muted, with no gamepad yet.")
+                    .disabled(!model.isRunning || model.secondGameView != nil)
                 }
 
                 ToolbarItemGroup(placement: .primaryAction) {
@@ -197,6 +373,10 @@ final class GameHostingController: NSHostingController<GameWindowContent>, NSWin
 @MainActor
 @objc(S9xGameWindowHosting)
 public final class GameWindowHosting: NSObject {
+    /// The narrowest window that shows every toolbar button beside a long
+    /// title, which AppKit won't shrink below 140 pt.
+    static let minimumWidth: CGFloat = 536
+
     /// Makes `window` show the SwiftUI game window content for `model`.
     @objc public static func install(in window: NSWindow, model: EmulatorModel) {
         let hostingController = GameHostingController(rootView: GameWindowContent(model: model))
@@ -212,6 +392,23 @@ public final class GameWindowHosting: NSObject {
         window.backgroundColor = .windowBackgroundColor
         window.contentViewController = hostingController
         window.delegate = hostingController
+        window.setFrame(frame, display: false)
+    }
+
+    /// Keeps `window` wide enough for the toolbar. A narrower saved frame grows
+    /// in proportion, from the top left, so the game keeps its shape.
+    @objc public static func applyMinimumWidth(to window: NSWindow) {
+        window.minSize.width = minimumWidth
+
+        var frame = window.frame
+
+        guard frame.width < minimumWidth else {
+            return
+        }
+
+        let height = frame.height * minimumWidth / frame.width
+        frame.origin.y -= height - frame.height
+        frame.size = NSSize(width: minimumWidth, height: height)
         window.setFrame(frame, display: false)
     }
 }

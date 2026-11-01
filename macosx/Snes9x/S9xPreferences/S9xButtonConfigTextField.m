@@ -327,6 +327,9 @@
     {
         self.keyCode = -1;
     }
+
+    // Ready for the new key or button without another click.
+    [self.window makeFirstResponder:self];
 }
 
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector

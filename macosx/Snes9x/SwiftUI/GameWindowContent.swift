@@ -321,6 +321,22 @@ struct GameView: NSViewRepresentable {
     }
 }
 
+/// One input in a toolbar menu. A Picker's items don't grey out on macOS, so
+/// these are toggles, which keep the checkmark.
+struct InputMenuItem<Label: View>: View {
+    let selection: Binding<String?>
+    let key: String?
+    @ViewBuilder let label: () -> Label
+
+    var body: some View {
+        Toggle(isOn: Binding {
+            selection.wrappedValue == key
+        } set: { _ in
+            selection.wrappedValue = key
+        }, label: label)
+    }
+}
+
 /// A toolbar icon with a 2 on it, like Open Second ROM's: this button is game 2's.
 struct GameTwoIcon: View {
     let systemName: String
@@ -354,7 +370,11 @@ struct GameWindowContent: View {
 
                 ToolbarItem(placement: .navigation) {
                     Button {
-                        model.openSecondROM()
+                        // The panel runs modally. Inside the button's action,
+                        // the toolbar wouldn't update until the next click.
+                        DispatchQueue.main.async {
+                            model.openSecondROM()
+                        }
                     } label: {
                         Label {
                             Text("Open Second ROM")
@@ -409,16 +429,18 @@ struct GameWindowContent: View {
                     .disabled(!model.isRunning)
 
                     Menu {
-                        Picker("Player 1", selection: player1Selection) {
-                            Text("Keyboard").tag(String?.none)
-                                .disabled(!model.player1CanUse(nil))
+                        Section("Player 1") {
+                            InputMenuItem(selection: player1Selection, key: nil) {
+                                Text("Keyboard")
+                            }
+                            .disabled(!model.player1CanUse(nil))
                             ForEach(model.gamepads, id: \.key) { gamepad in
-                                Text(gamepad.name)
-                                    .tag(String?.some(gamepad.key))
-                                    .disabled(!model.player1CanUse(gamepad.key))
+                                InputMenuItem(selection: player1Selection, key: gamepad.key) {
+                                    Text(gamepad.name)
+                                }
+                                .disabled(!model.player1CanUse(gamepad.key))
                             }
                         }
-                        .pickerStyle(.inline)
                     } label: {
                         // Icon only: a 512 pt window has no room for the name,
                         // so the icon and the tooltip say what Player 1 uses.
@@ -493,18 +515,21 @@ struct GameWindowContent: View {
                         .help("Load game 2 from a slot. Pick one with the arrow keys and Return, or press Esc to cancel.")
 
                         Menu {
-                            Picker("Game 2", selection: secondGameSelection) {
-                                Text("None").tag(String?.none)
-                                Text("Keyboard")
-                                    .tag(String?.some(EmulatorModel.keyboardKey))
-                                    .disabled(!model.secondGameCanUse(EmulatorModel.keyboardKey))
+                            Section("Game 2") {
+                                InputMenuItem(selection: secondGameSelection, key: nil) {
+                                    Text("None")
+                                }
+                                InputMenuItem(selection: secondGameSelection, key: EmulatorModel.keyboardKey) {
+                                    Text("Keyboard")
+                                }
+                                .disabled(!model.secondGameCanUse(EmulatorModel.keyboardKey))
                                 ForEach(model.gamepads, id: \.key) { gamepad in
-                                    Text(gamepad.name)
-                                        .tag(String?.some(gamepad.key))
-                                        .disabled(!model.secondGameCanUse(gamepad.key))
+                                    InputMenuItem(selection: secondGameSelection, key: gamepad.key) {
+                                        Text(gamepad.name)
+                                    }
+                                    .disabled(!model.secondGameCanUse(gamepad.key))
                                 }
                             }
-                            .pickerStyle(.inline)
                         } label: {
                             Label {
                                 Text(secondGameTitle)

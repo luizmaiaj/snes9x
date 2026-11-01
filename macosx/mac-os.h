@@ -211,7 +211,7 @@ typedef NS_OPTIONS(uint32, S9xSecondGameRequest)
 @property (nonatomic, assign, getter=isChoosingSlot) BOOL choosingSlot;
 
 - (void)setGamepadButton:(int)button pressed:(BOOL)pressed;
-- (void)setKeyButton:(int)button player:(int)player pressed:(BOOL)pressed;
+- (void)setKeyButton:(int)button pressed:(BOOL)pressed;
 - (void)setRawKey:(int)keyCode pressed:(BOOL)pressed;
 
 /// Lets go of everything held on the gamepad.

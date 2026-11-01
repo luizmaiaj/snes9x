@@ -2861,12 +2861,12 @@ static void SetModifierKey (struct S9xButton button, bool pressed)
 
     if (pressed && KeyboardGoesToSecondGame())
     {
-        [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:YES];
+        [secondGameInput setKeyButton:button.buttonCode pressed:YES];
     }
     else
     {
         pressedKeys[button.player][button.buttonCode] = pressed;
-        [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:pressed];
+        [secondGameInput setKeyButton:button.buttonCode pressed:pressed];
     }
 }
 
@@ -2882,7 +2882,7 @@ static void SetModifierKey (struct S9xButton button, bool pressed)
     if (KeyboardGoesToSecondGame())
     {
         S9xButton secondGameButton = keyCodes[event.keyCode];
-        [secondGameInput setKeyButton:secondGameButton.buttonCode player:secondGameButton.player pressed:YES];
+        [secondGameInput setKeyButton:secondGameButton.buttonCode pressed:YES];
         [secondGameInput setRawKey:event.keyCode pressed:YES];
         pthread_mutex_unlock(&keyLock);
         return;
@@ -2923,7 +2923,7 @@ static void SetModifierKey (struct S9xButton button, bool pressed)
     }
 
     // Lets go in both games: the key may have gone down before a slot picker opened.
-    [secondGameInput setKeyButton:button.buttonCode player:button.player pressed:NO];
+    [secondGameInput setKeyButton:button.buttonCode pressed:NO];
     [secondGameInput setRawKey:event.keyCode pressed:NO];
 
     for ( NSUInteger i = 0; i < kNumFunctionButtons; ++i )

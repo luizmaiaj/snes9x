@@ -1386,7 +1386,7 @@ final class SecondGameInputTests: XCTestCase {
         window.setGamepadButton(3, pressed: true)
         window.setGamepadButton(9, pressed: true)
         window.setGamepadButton(3, pressed: false)
-        window.setKeyButton(4, player: 1, pressed: true)
+        window.setKeyButton(4, pressed: true)
         window.setRawKey(53, pressed: true)
         window.setRawKey(200, pressed: true)
 
@@ -1407,7 +1407,7 @@ final class SecondGameInputTests: XCTestCase {
 
         XCTAssertEqual(pads[9], 1, "the pad drives the game's Player 1")
         XCTAssertEqual(pads[3], 0, "a released button stops")
-        XCTAssertEqual(keys[buttons + 4], 1, "keys stay with their player")
+        XCTAssertEqual(keys[4], 1, "any bound key drives the game's Player 1")
         XCTAssertEqual(keys.reduce(0, +) + pads.reduce(0, +), 2)
 
         var raw = [UInt8](repeating: 0, count: 255)

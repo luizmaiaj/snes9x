@@ -249,6 +249,7 @@
 		CD1EA931E230286D8D72231D /* GameWindowContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4EC0394830E99EEE56A19C8 /* GameWindowContent.swift */; };
 		EBEFE32EE1AE5E15C8BD193B /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 839D87FE809F64891BECC203 /* Cocoa.framework */; };
 		F17D2D4E64EB84BBBFE04D57 /* EmulatorModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA742D65BA2BEC9270AB0E51 /* EmulatorModelTests.swift */; };
+		B14C0E1F5B7D4E2A9C6D2F02 /* GameWindowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14C0E1F5B7D4E2A9C6D2F01 /* GameWindowUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -265,6 +266,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 30D15CEE22CE6B5A005BC352;
 			remoteInfo = "snes9x framework";
+		};
+		B14C0E1F5B7D4E2A9C6D2F0C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 30714714230E379500917F82;
+			remoteInfo = Snes9x;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -594,6 +602,8 @@
 		EAECB68904AC7FCE00A80003 /* mac-stringtools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = "mac-stringtools.h"; sourceTree = "<group>"; };
 		F5C108DD0386806001A80002 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
 		F5FC76BD03873BBF01A80002 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
+		B14C0E1F5B7D4E2A9C6D2F01 /* GameWindowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameWindowUITests.swift; sourceTree = "<group>"; };
+		B14C0E1F5B7D4E2A9C6D2F03 /* Snes9xUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Snes9xUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -634,6 +644,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B14C0E1F5B7D4E2A9C6D2F06 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -651,6 +668,7 @@
 				30D15CEF22CE6B5A005BC352 /* snes9x_framework.framework */,
 				30714715230E379500917F82 /* Snes9x.app */,
 				CD864F84BE2B8C6CD03CDCA0 /* Snes9xTests.xctest */,
+				B14C0E1F5B7D4E2A9C6D2F03 /* Snes9xUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -666,6 +684,7 @@
 				195DF8C9FE9D4F0611CA2CBB /* Products */,
 				3045A1EB22D03C420092B97D /* Frameworks */,
 				83D14FB5F3BFF0DCDD36B323 /* Snes9xTests */,
+				B14C0E1F5B7D4E2A9C6D2F04 /* Snes9xUITests */,
 			);
 			name = "Snes9x CVS";
 			sourceTree = "<group>";
@@ -827,6 +846,15 @@
 			);
 			name = SwiftUI;
 			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		B14C0E1F5B7D4E2A9C6D2F04 /* Snes9xUITests */ = {
+			isa = PBXGroup;
+			children = (
+				B14C0E1F5B7D4E2A9C6D2F01 /* GameWindowUITests.swift */,
+			);
+			name = Snes9xUITests;
+			path = Snes9xUITests;
 			sourceTree = "<group>";
 		};
 		83D14FB5F3BFF0DCDD36B323 /* Snes9xTests */ = {
@@ -1292,6 +1320,24 @@
 			productReference = CD864F84BE2B8C6CD03CDCA0 /* Snes9xTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		B14C0E1F5B7D4E2A9C6D2F08 /* Snes9xUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B14C0E1F5B7D4E2A9C6D2F09 /* Build configuration list for PBXNativeTarget "Snes9xUITests" */;
+			buildPhases = (
+				B14C0E1F5B7D4E2A9C6D2F05 /* Sources */,
+				B14C0E1F5B7D4E2A9C6D2F06 /* Frameworks */,
+				B14C0E1F5B7D4E2A9C6D2F07 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B14C0E1F5B7D4E2A9C6D2F0D /* PBXTargetDependency */,
+			);
+			name = Snes9xUITests;
+			productName = Snes9xUITests;
+			productReference = B14C0E1F5B7D4E2A9C6D2F03 /* Snes9xUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1311,6 +1357,9 @@
 					};
 					30D15CEE22CE6B5A005BC352 = {
 						CreatedOnToolsVersion = 10.2.1;
+					};
+					B14C0E1F5B7D4E2A9C6D2F08 = {
+						TestTargetID = 30714714230E379500917F82;
 					};
 				};
 			};
@@ -1333,6 +1382,7 @@
 				30714714230E379500917F82 /* Snes9x */,
 				30D15CEE22CE6B5A005BC352 /* snes9x framework */,
 				F02BBFC25ECE5BF33AD54A67 /* Snes9xTests */,
+				B14C0E1F5B7D4E2A9C6D2F08 /* Snes9xUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -1378,6 +1428,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F55634F0877D79988A7758F1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B14C0E1F5B7D4E2A9C6D2F07 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1519,6 +1576,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B14C0E1F5B7D4E2A9C6D2F05 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B14C0E1F5B7D4E2A9C6D2F02 /* GameWindowUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1531,6 +1596,11 @@
 			isa = PBXTargetDependency;
 			target = 30D15CEE22CE6B5A005BC352 /* snes9x framework */;
 			targetProxy = 30714726230E379C00917F82 /* PBXContainerItemProxy */;
+		};
+		B14C0E1F5B7D4E2A9C6D2F0D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 30714714230E379500917F82 /* Snes9x */;
+			targetProxy = B14C0E1F5B7D4E2A9C6D2F0C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1882,6 +1952,38 @@
 			};
 			name = Release;
 		};
+		B14C0E1F5B7D4E2A9C6D2F0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snes9x.macos.snes9xUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Snes9x;
+			};
+			name = Release;
+		};
+		B14C0E1F5B7D4E2A9C6D2F0B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.snes9x.macos.snes9xUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Snes9x;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1917,6 +2019,15 @@
 			buildConfigurations = (
 				EA6A1102085808D200A1CF18 /* Release */,
 				CF047D02109C98F900FD0754 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B14C0E1F5B7D4E2A9C6D2F09 /* Build configuration list for PBXNativeTarget "Snes9xUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B14C0E1F5B7D4E2A9C6D2F0A /* Release */,
+				B14C0E1F5B7D4E2A9C6D2F0B /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

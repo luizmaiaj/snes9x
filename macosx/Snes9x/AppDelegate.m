@@ -181,8 +181,9 @@ NSWindowFrameAutosaveName const kCheatFinderWindowIdentifier = @"s9xCheatFinderW
 	[defaults synchronize];
 
     [self.s9xEngine setMacFastForwardRate:(int)[defaults integerForKey:kTurboRatePref]];
+    [self.s9xEngine setMacFrameSkip:(int)[defaults integerForKey:kMacFrameSkipPref]];
 
-    self.keys = [[defaults objectForKey:kKeyboardPrefs] mutableCopy];
+    self.keys =[[defaults objectForKey:kKeyboardPrefs] mutableCopy];
 
     for (NSString *control in [self.keys copy])
     {

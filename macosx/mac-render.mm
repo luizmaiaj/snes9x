@@ -288,11 +288,12 @@ static void SetBit(std::atomic<uint32> *bits, int bit, BOOL on)
 	}
 }
 
-- (void)setKeyButton:(int)button player:(int)player pressed:(BOOL)pressed
+// The keyboard controls one game, so any bound key is that game's Player 1.
+- (void)setKeyButton:(int)button pressed:(BOOL)pressed
 {
-	if (button >= 0 && button < kNumButtons && player >= 0 && player < MAC_MAX_PLAYERS)
+	if (button >= 0 && button < kNumButtons)
 	{
-		SetBit(&frames->keyButtons[player], button, pressed);
+		SetBit(&frames->keyButtons[0], button, pressed);
 	}
 }
 

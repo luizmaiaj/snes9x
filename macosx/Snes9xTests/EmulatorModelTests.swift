@@ -874,10 +874,31 @@ final class GameWindowTests: XCTestCase {
         XCTAssertTrue(options.isSuperset(of: proposed))
     }
 
+    /// Waits for SwiftUI to put an item with this label in the toolbar, up to
+    /// five seconds, so a slow layout pass doesn't fail the test.
     private func toolbarItem(labelled label: String, in window: NSWindow) -> NSToolbarItem? {
         window.contentView?.layoutSubtreeIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        return window.toolbar?.items.first { $0.label == label }
+        var item: NSToolbarItem?
+        _ = runMainLoop { () -> Bool in
+            item = window.toolbar?.items.first { $0.label == label }
+            return item != nil
+        }
+        return item
+    }
+
+    /// Runs the main run loop in short steps until `condition` holds or
+    /// `timeout` passes, and says whether it held.
+    private func runMainLoop(timeout: TimeInterval = 5, until condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() {
+            if Date() >= deadline {
+                return false
+            }
+
+            RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+        }
+
+        return true
     }
 
     private func openROMItem(in window: NSWindow) -> NSToolbarItem? {
@@ -889,10 +910,21 @@ final class GameWindowTests: XCTestCase {
     }
 
     /// Runs a toolbar item's action through its menu form, as the overflow
-    /// menu does; SwiftUI draws the button itself.
+    /// menu does; SwiftUI draws the button itself. The menu form starts as
+    /// AppKit's disabled placeholder, has no action for a moment, then gets
+    /// SwiftUI's enabled one, so this waits for that (#27), and still fails
+    /// when it never comes.
     private func click(_ item: NSToolbarItem) throws {
+        _ = runMainLoop {
+            guard let menuItem = item.menuFormRepresentation else {
+                return false
+            }
+
+            return menuItem.isEnabled && menuItem.action != nil
+        }
         let menuItem = try XCTUnwrap(item.menuFormRepresentation, "\(item.label) has no menu form")
-        let action = try XCTUnwrap(menuItem.action)
+        let action = try XCTUnwrap(menuItem.action, "\(item.label)'s menu form never got an action")
+        XCTAssertTrue(menuItem.isEnabled, "\(item.label)'s menu form never became enabled")
         XCTAssertTrue(NSApplication.shared.sendAction(action, to: menuItem.target ?? menuItem, from: menuItem))
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
     }
@@ -972,10 +1004,7 @@ final class GameWindowTests: XCTestCase {
 
         // SwiftUI draws the button itself; its menu form (shown when the
         // toolbar overflows) runs the same SwiftUI action.
-        let menuItem = try XCTUnwrap(item.menuFormRepresentation)
-        let action = try XCTUnwrap(menuItem.action)
-        XCTAssertTrue(NSApplication.shared.sendAction(action, to: menuItem.target ?? menuItem, from: menuItem))
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        try click(item)
 
         XCTAssertEqual(opened, [rom])
     }

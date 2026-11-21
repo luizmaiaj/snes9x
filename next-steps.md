@@ -1,19 +1,20 @@
 # Next steps — snes9x (luizmaiaj fork)
-_Last updated: 2026-11-01 by github-issue-fix_
+_Last updated: 2026-11-21 by github-issue-fix_
 
 ## Queue (do next, roughly in order)
-- [ ] #27 — Fix the intermittent failure in testThePauseButtonPausesAndResumesTheGame; a clean main can show red
+- [ ] #18 — Two games at once, each with its own pad; unblocked, Luiz has a second Pro 2 since 2026-11-21
 - [ ] #20 — Repeat the map in S, A and X modes and over USB; needs Luiz at the pad
 - [ ] #20 — Try Swap Gamepads and Open Second ROM from a real pad, and a command on a stick; Claudio drives the app, and Luiz only presses the pad
 
 ## Blocked / waiting
-- [ ] #18 — Two pads at once; needs a second pad
 
 ## Recently done
+- #27 — Toolbar tests wait for SwiftUI's enabled menu action instead of a fixed delay; 600 of 600 window-test runs pass. Also fixed the test targets' header-map warning and a concurrency warning on `EmulatorModel.keyboardKey` (2026-11-21, not released)
+- Two pads in Mario Kart — Dolphin running left both pads sending no buttons; Player 2 assigned and its D-pad map fixed (2026-11-21, settings only, no code)
 - #23 — No code needed: macOS 27 ignores an app's Home request until the user changes the Home button settings. Luiz changed them, and Home now works as a plain button in Snes9x, with Pause/Resume bound to it (2026-11-01, closed without a code change)
 - #20 GCController — Sees the pad in D mode and declares nothing beyond IOHIDManager's map; presses not compared one by one (2026-11-01)
 - #17 and #13 hand checks — Luiz checked both in v26.11.01.11 (2026-11-01)
-- UI tests — `Snes9xUITests` scheme drives the real window for #17 and #13; 3 pass. Runs take over the mouse and keyboard, so ask Luiz before each run (2026-11-01, not released)
+- UI tests — `Snes9xUITests` scheme drives the real window for #17 and #13; 3 pass. Runs take over the mouse and keyboard, so ask Luiz before each run (2026-11-01, released in v26.11.01.12)
 - #25 — Game 1 uses the saved frame skip at launch (2026-11-01, released in v26.11.01.11)
 - #18 hand checks — Toolbar buttons, sound, Swap Gamepads, menus, keyboard, full screen and a pad going off and on all checked by Luiz on a Release build; found and fixed four faults (2026-11-01, released in v26.11.01.11). Two pads at once not tried: only one pad here
 - #20 hand checks — Binding, rebinding and relaunch checked by Luiz in the real Preferences fields (2026-11-01). Swap Gamepads and Open Second ROM from a pad, and a command on a stick, not tried

@@ -150,8 +150,10 @@ public final class EmulatorModel: NSObject, ObservableObject {
     /// Runs the second game.
     var secondGameRunner: SecondGameRunner = SecondGameProcess()
 
-    /// What Preferences → Controls saves for a player on the keyboard.
-    static let keyboardKey = "0:0:0"
+    /// What Preferences → Controls saves for a player on the keyboard. A
+    /// constant string, so the second game's process can read it off the
+    /// main actor.
+    nonisolated static let keyboardKey = "0:0:0"
 
     private let engine: GameEngine
     private var defaultsObserver: AnyCancellable?
